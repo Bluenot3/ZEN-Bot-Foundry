@@ -1,0 +1,5 @@
+{
+  "name": "ZEN Bot Foundry",
+  "description": "A production-ready, glassmorphic platform to build, configure, and publish custom AI chatbots using a unified model router and BYOK architecture.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZEN FOUNDRY | COMMAND CENTER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              tactical: {
+                black: '#f8fafc',
+                dark: '#f1f5f9',
+                panel: 'rgba(255, 255, 255, 0.7)',
+                border: 'rgba(203, 213, 225, 0.5)',
+                grey: '#64748b',
+                dim: '#94a3b8',
+                blue: '#3b82f6',
+                white: '#0f172a',
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      /* Digital Mesh Background Animation */
+      .mesh-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.05) 1px, transparent 0);
+        background-size: 40px 40px;
+        z-index: -1;
+        animation: meshMove 60s linear infinite;
+      }
+
+      @keyframes meshMove {
+        from { background-position: 0 0; }
+        to { background-position: 1000px 1000px; }
+      }
+
+      .liquid-glass {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 
+          0 8px 32px 0 rgba(31, 38, 135, 0.07),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+      }
+
+      .mil-border {
+        border: 1px solid rgba(203, 213, 225, 0.6);
+      }
+
+      .mil-panel {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+      }
+
+      .mil-input {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(203, 213, 225, 0.8);
+        border-radius: 0.75rem;
+        color: #0f172a;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.2s ease;
+      }
+
+      .mil-input:focus {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      }
+
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+      .corner { display: none; } /* Hide old tactical corners */
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "recharts": "https://esm.sh/recharts@^3.6.0",
+        "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div class="mesh-bg"></div>
+    <div id="root"></div>
+  </body>
+</html>
