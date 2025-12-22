@@ -36,7 +36,7 @@ export default function Layout() {
   if (isPublic) return <Outlet />;
 
   return (
-    <div className="h-screen w-screen flex selection:bg-blue-500/30 selection:text-blue-200 overflow-hidden">
+    <div className="h-screen w-full flex selection:bg-blue-500/30 selection:text-blue-200 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 bg-slate-900/50 backdrop-blur-3xl border-r border-white/5 z-40 flex flex-col shrink-0">
         <div className="p-5 border-b border-white/5">
@@ -93,7 +93,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-[#020617]/50 relative overflow-hidden">
-        <header className="h-12 border-b border-white/5 flex items-center justify-between px-6 bg-slate-900/20 backdrop-blur-md sticky top-0 z-30 shrink-0">
+        <header className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-slate-900/20 backdrop-blur-md sticky top-0 z-30 shrink-0">
           <div className="flex items-center gap-3 text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em]">
             <Layers size={12} className="text-blue-500" />
             <span>Foundry</span>
@@ -104,13 +104,13 @@ export default function Layout() {
           <div className="flex items-center gap-6">
             <div className="px-3 py-1 rounded-md bg-white/5 border border-white/5 flex items-center gap-2">
               <span className="text-[9px] font-mono font-bold text-slate-400">OP_ID:</span>
-              <span className="text-[9px] font-mono font-bold text-blue-400">{user?.email.split('@')[0].toUpperCase()}</span>
+              <span className="text-[9px] font-mono font-bold text-blue-400">{user?.email.split('@')[0].toUpperCase() || 'ROOT'}</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-          <div className="max-w-[1400px] mx-auto h-full">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+          <div className="max-w-[1600px] mx-auto min-h-full">
             <Outlet />
           </div>
         </div>

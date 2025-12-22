@@ -61,8 +61,8 @@ export const ModelRouter = {
       sendTelemetry('IMAGE_GEN', 'Synthesis Pipeline Hot', `Model: gemini-2.5-flash-image`);
       try {
         const stylePrefix = bot.image_gen_config.style_prompt ? `Style: ${bot.image_gen_config.style_prompt}. ` : '';
-        const chipSuffix = bot.image_gen_config.selected_chips.length > 0 
-          ? ` (Style Presets: ${bot.image_gen_config.selected_chips.join(', ')})` 
+        const chipSuffix = bot.image_gen_config.selected_chips && bot.image_gen_config.selected_chips.length > 0 
+          ? ` (Presets: ${bot.image_gen_config.selected_chips.join(', ')})` 
           : '';
         const finalImagePrompt = `${stylePrefix}${userPrompt}${chipSuffix}`;
 
@@ -76,6 +76,7 @@ export const ModelRouter = {
 
     sendTelemetry('REASONING', 'Thought Flux Engaged', `Budget: ${bot.model_config.thinking_budget} TKNS`);
 
+    // Routing
     const isHighTier = bot.model_config.thinking_budget > 0 || bot.model_config.primary_model.includes('pro') || bot.model_config.primary_model.includes('o1');
     const geminiRoutingModel = isHighTier ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
 
@@ -157,7 +158,6 @@ export const ModelRouter = {
 
   generateImageWithBanana: async (prompt: string): Promise<string> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    // MUST use gemini-2.5-flash-image for image gen as per guidelines
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: [{ parts: [{ text: prompt }] }],
@@ -173,7 +173,6 @@ export const ModelRouter = {
     throw new Error("No image signal detected in diffusion response.");
   },
 
-  // Fix: Added generateArenaTheme to support AI-driven theme synthesis in ArenaDesigner
   generateArenaTheme: async (prompt: string): Promise<ArenaTheme> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
@@ -203,7 +202,6 @@ export const ModelRouter = {
     try {
       return JSON.parse(response.text || '{}');
     } catch (e) {
-      // Fallback theme in case of JSON parse failure
       return {
         primary_color: '#3b82f6',
         secondary_color: '#1e293b',
