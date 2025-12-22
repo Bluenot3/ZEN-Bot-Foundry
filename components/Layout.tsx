@@ -1,23 +1,28 @@
+
 import React from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Terminal, Shield, BarChart2, Briefcase, Activity, Power, Layers, ChevronRight, BookOpen } from 'lucide-react';
+import { Terminal, Shield, BarChart2, Briefcase, Activity, Power, ChevronRight, BookOpen, Layers, Radar } from 'lucide-react';
 import { AuthService } from '../services/store';
+import Logo from './Logo';
 
 const SidebarItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex items-center gap-4 px-6 py-4 transition-all duration-300 group relative mx-2 rounded-2xl mb-1 ${
+      `flex items-center gap-3 px-4 py-3 transition-all duration-300 group relative mx-2 rounded-xl mb-1 ${
         isActive
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-          : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+          ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
       }`
     }
   >
     {({ isActive }) => (
       <>
-        <Icon className={`w-4 h-4 transition-transform duration-300 ${isActive ? '' : 'group-hover:scale-110'}`} />
-        <span className="font-sans text-[13px] font-semibold tracking-wide">{label}</span>
+        <Icon className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'text-blue-400' : 'group-hover:scale-110'}`} />
+        <span className="font-mono text-[11px] font-bold uppercase tracking-widest">{label}</span>
+        {isActive && (
+          <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+        )}
       </>
     )}
   </NavLink>
@@ -31,74 +36,80 @@ export default function Layout() {
   if (isPublic) return <Outlet />;
 
   return (
-    <div className="min-h-screen flex font-sans selection:bg-blue-600 selection:text-white">
+    <div className="h-screen w-screen flex selection:bg-blue-500/30 selection:text-blue-200 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-72 liquid-glass border-r border-white/20 z-40 flex flex-col m-4 rounded-[2rem] shadow-xl">
-        <div className="p-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Layers className="text-white w-5 h-5" />
+      <aside className="w-64 bg-slate-900/50 backdrop-blur-3xl border-r border-white/5 z-40 flex flex-col shrink-0">
+        <div className="p-6 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+              <Logo className="text-white w-5 h-5" />
             </div>
-            <div>
-              <h1 className="text-[15px] font-bold text-slate-900 tracking-tight leading-none">Zen Foundry</h1>
-              <span className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mt-1 inline-block">v4.0.2 Premium</span>
+            <div className="overflow-hidden">
+              <h1 className="text-[13px] font-black text-slate-100 tracking-tighter leading-none uppercase">Zen Foundry</h1>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 status-pulse"></div>
+                <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest">Core Secure</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2">
-          <div className="px-6 py-4 text-[11px] font-bold text-slate-400 tracking-widest uppercase">Platform</div>
-          <SidebarItem to="/dashboard" icon={Terminal} label="Command Center" />
-          <SidebarItem to="/knowledge" icon={BookOpen} label="Knowledge Vault" />
-          <SidebarItem to="/marketplace" icon={Briefcase} label="Module Library" />
-          <SidebarItem to="/analytics" icon={BarChart2} label="Live Telemetry" />
+        <nav className="flex-1 overflow-y-auto py-6 space-y-6 custom-scrollbar">
+          <section>
+            <div className="px-6 pb-2 text-[9px] font-black text-slate-500 tracking-[0.3em] uppercase">Intelligence</div>
+            <SidebarItem to="/dashboard" icon={Terminal} label="Command" />
+            <SidebarItem to="/knowledge" icon={BookOpen} label="Vault" />
+            <SidebarItem to="/marketplace" icon={Briefcase} label="Arena" />
+            <SidebarItem to="/analytics" icon={Radar} label="Telemetry" />
+          </section>
           
-          <div className="px-6 py-4 mt-6 text-[11px] font-bold text-slate-400 tracking-widest uppercase">Security</div>
-          <SidebarItem to="/keys" icon={Shield} label="Credential Vault" />
-          <SidebarItem to="/subscription" icon={Activity} label="System Resources" />
+          <section>
+            <div className="px-6 pb-2 text-[9px] font-black text-slate-500 tracking-[0.3em] uppercase">Resources</div>
+            <SidebarItem to="/keys" icon={Shield} label="Credentials" />
+            <SidebarItem to="/subscription" icon={Activity} label="System" />
+          </section>
         </nav>
 
-        <div className="p-8 border-t border-slate-200/50">
-          <div className="mb-6 bg-white/40 p-4 rounded-2xl border border-white/40">
-            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase mb-2">
-              <span>Uplink Status</span>
-              <span className="text-blue-600">Secure</span>
+        <div className="p-6 border-t border-white/5 bg-black/20 shrink-0">
+          <div className="mb-6 space-y-3">
+            <div className="flex justify-between items-center text-[9px] font-black text-slate-500 uppercase">
+              <span>Sync Status</span>
+              <span className="text-blue-400">98.2%</span>
             </div>
-            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-600 w-[85%] rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500 w-[98%] shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
             </div>
           </div>
 
           <button 
             onClick={AuthService.logout}
-            className="flex items-center gap-3 font-bold text-[13px] text-slate-400 hover:text-red-500 transition-colors w-full px-4"
+            className="flex items-center gap-3 font-mono text-[10px] font-bold text-slate-500 hover:text-rose-400 transition-colors w-full px-2"
           >
-            <Power className="w-4 h-4" />
-            Sign Out
+            <Power className="w-3.5 h-3.5" />
+            LOGOUT_SESSION
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-20 bg-white/20 backdrop-blur-xl border-b border-white/20 flex items-center justify-between px-10 sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-[12px] font-bold text-slate-400 uppercase tracking-widest">
-              <span>System</span>
-              <ChevronRight size={12} className="text-slate-300" />
-              <span className="text-slate-900">{location.pathname.substring(1).replace('/', ' / ')}</span>
-            </div>
+      <main className="flex-1 flex flex-col min-w-0 bg-[#020617]/50 relative overflow-hidden">
+        <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-slate-900/20 backdrop-blur-md sticky top-0 z-30 shrink-0">
+          <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+            <Layers size={14} className="text-blue-500" />
+            <span>Foundry</span>
+            <ChevronRight size={10} className="text-slate-700" />
+            <span className="text-slate-200">{location.pathname.substring(1).split('/')[0] || 'Dashboard'}</span>
           </div>
           
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 py-2 px-4 rounded-2xl bg-white/60 border border-white shadow-sm">
-              <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
-              <span className="text-[13px] font-bold text-slate-700">{user?.email.split('@')[0]}</span>
+            <div className="px-3 py-1.5 rounded-md bg-white/5 border border-white/5 flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold text-slate-400">OP_ID:</span>
+              <span className="text-[10px] font-mono font-bold text-blue-400">{user?.email.split('@')[0].toUpperCase()}</span>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 p-10 overflow-y-auto">
+        <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar">
           <div className="max-w-7xl mx-auto h-full">
             <Outlet />
           </div>

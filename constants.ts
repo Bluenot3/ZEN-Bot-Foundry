@@ -5,7 +5,7 @@ export const MODEL_REGISTRY: Model[] = [
   {
     model_id: 'gemini-3-pro-preview',
     provider_id: 'google',
-    display_name: 'Gemini 3 Pro (Ultra)',
+    display_name: 'Gemini 3 Pro (Elite)',
     capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true },
     context_window: 2000000,
     cost_tier: 'medium',
@@ -14,7 +14,7 @@ export const MODEL_REGISTRY: Model[] = [
   {
     model_id: 'gemini-3-flash-preview',
     provider_id: 'google',
-    display_name: 'Gemini 3 Flash (Speed)',
+    display_name: 'Gemini 3 Flash (Instant)',
     capabilities: { reasoning: false, coding: true, vision: true, long_context: true, tool_calling: true },
     context_window: 1000000,
     cost_tier: 'low',
@@ -23,7 +23,7 @@ export const MODEL_REGISTRY: Model[] = [
   {
     model_id: 'gpt-o3-mini',
     provider_id: 'openai',
-    display_name: 'GPT-o3-mini (Reasoning)',
+    display_name: 'GPT-o3-mini (Logic)',
     capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true },
     context_window: 200000,
     cost_tier: 'medium',
@@ -41,32 +41,52 @@ export const MODEL_REGISTRY: Model[] = [
 ];
 
 export const AVAILABLE_TOOLS: Tool[] = [
-  { tool_id: 'web_search', name: 'Web Search', description: 'Live internet access for real-time intel retrieval.', enabled: false },
-  { tool_id: 'code_interpreter', name: 'Sandbox Engine', description: 'Execute and test complex Python or JS snippets safely.', enabled: false },
-  { tool_id: 'visual_renderer', name: 'Visual Processor', description: 'Deep image analysis and spatial data rendering.', enabled: false },
-  { tool_id: 'network_probe', name: 'Network Probe', description: 'Analyze external API endpoints and status payloads.', enabled: false },
-  { tool_id: 'rag_vault', name: 'Knowledge Vault', description: 'Query proprietary encrypted documentation datasets.', enabled: false },
-  { tool_id: 'file_sys', name: 'FS Interface', description: 'Read and write to a virtual persistent file system.', enabled: false },
-  { tool_id: 'crypto_gate', name: 'Crypto Gateway', description: 'Verify blockchain transactions and wallet signatures.', enabled: false },
+  { tool_id: 'web_search', name: 'Web Intel', description: 'Real-time search across global networks.', enabled: false },
+  { tool_id: 'code_interpreter', name: 'Compute Kernel', description: 'Sandboxed Python/JS execution environment.', enabled: false },
+  { tool_id: 'visual_gen', name: 'Imaging Unit', description: 'Generate high-fidelity assets from descriptions.', enabled: false },
+  { tool_id: 'knowledge_rag', name: 'Vault Query', description: 'Deep retrieval from uploaded document banks.', enabled: false },
+  { tool_id: 'api_connector', name: 'API Bridge', description: 'Interact with external REST endpoints.', enabled: false },
 ];
 
 export const BOT_TEMPLATES = [
   {
+    id: 'tpl-architect',
     name: 'Neural Architect',
-    description: 'Expert in system design and React application development.',
-    system_instructions: 'You are a master software architect. When asked to build apps, provide high-quality code in artifacts. Use Tailwind CSS for styling.',
-    icon: '🏗️'
+    description: 'Expert in full-stack system design and rapid prototyping.',
+    system_instructions: 'You are an elite Senior Software Architect. Your goal is to produce clean, modular, and high-performance React/TypeScript applications. Always provide artifacts for any significant code blocks.',
+    icon: '🏗️',
+    industry: 'Engineering',
+    voice: 'professional',
+    planning: 'chain-of-thought'
   },
   {
-    name: 'OSINT Analyst',
-    description: 'Specialized in gathering open-source intelligence and web data.',
-    system_instructions: 'You are a senior OSINT analyst. Provide structured reports and use web search tools effectively.',
-    icon: '🔍'
+    id: 'tpl-analyst',
+    name: 'Signal Analyst',
+    description: 'Deep-dive financial and technical document analysis agent.',
+    system_instructions: 'You are a Senior Quantitative Analyst. You specialize in parsing complex reports, identifying trends, and calculating projections with high precision.',
+    icon: '📊',
+    industry: 'Finance',
+    voice: 'concise',
+    planning: 'react'
   },
   {
+    id: 'tpl-copywriter',
+    name: 'Creative Engine',
+    description: 'Generative marketing and narrative design unit.',
+    system_instructions: 'You are a world-class Copywriter and Narrative Designer. You excel at high-impact messaging, brand storytelling, and multi-channel content strategy.',
+    icon: '✍️',
+    industry: 'Marketing',
+    voice: 'energetic',
+    planning: 'linear'
+  },
+  {
+    id: 'tpl-sentinel',
     name: 'Cyber Sentinel',
-    description: 'Security-focused bot for code auditing and vulnerability scans.',
-    system_instructions: 'You are a cybersecurity expert. Audit code for OWASP vulnerabilities and provide remediation steps.',
-    icon: '🛡️'
+    description: 'Offensive and defensive cybersecurity auditing unit.',
+    system_instructions: 'You are a Principal Security Researcher. You audit code, networks, and systems for vulnerabilities. You provide detailed remediation paths and risk scoring.',
+    icon: '🛡️',
+    industry: 'Security',
+    voice: 'stoic',
+    planning: 'autonomous'
   }
 ];

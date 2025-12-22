@@ -14,6 +14,11 @@ import Subscription from './pages/Subscription';
 import KnowledgeVault from './pages/KnowledgeVault';
 import { AuthService } from './services/store';
 
+// WalletConnect / Reown Integration
+// Note: In a real production environment, we'd import { createAppKit } from '@reown/appkit'
+// For this environment, we'll simulate the provider and project ID setup.
+const PROJECT_ID = 'eaf0cf5bfb50b695c5c47f42a191bcca';
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -22,9 +27,12 @@ export default function App() {
     const user = AuthService.getUser();
     setIsAuthenticated(!!user);
     setLoading(false);
+    
+    // Log project ID for verification
+    console.debug(`[ZEN_COMMERCE] Initializing Reown Gateway: ${PROJECT_ID}`);
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-900 font-bold text-sm tracking-widest uppercase">Initializing Foundry Core...</div>;
+  if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-blue-500 font-mono text-sm tracking-widest uppercase">Initializing Neural Core...</div>;
 
   return (
     <HashRouter>
