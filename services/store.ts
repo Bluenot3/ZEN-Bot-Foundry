@@ -1,15 +1,61 @@
 
-import { Entitlement, WalletLink, User, ApiKey, BotConfig, UsageEvent, KnowledgeAsset } from '../types';
+import { Entitlement, WalletLink, User, ApiKey, BotConfig, UsageEvent, KnowledgeAsset, ArenaConfig, ArenaTheme } from '../types';
 
-const COMMERCE_KEYS = {
+const STORE_KEYS = {
   ENTITLEMENTS: 'zen_entitlements',
   WALLET: 'zen_wallet_link',
-  ARENAS: 'zen_arenas'
+  ARENAS: 'zen_arenas',
+  BOTS: 'zen_bots',
+  USER: 'zen_user',
+  USAGE: 'zen_usage',
+  KEYS: 'zen_keys',
+  KNOWLEDGE: 'zen_knowledge'
+};
+
+export const ArenaService = {
+  getArenas: (): ArenaConfig[] => {
+    const stored = localStorage.getItem(STORE_KEYS.ARENAS);
+    return stored ? JSON.parse(stored) : [];
+  },
+  getArena: (id: string): ArenaConfig | undefined => {
+    return ArenaService.getArenas().find(a => a.id === id);
+  },
+  saveArena: async (arena: ArenaConfig) => {
+    const arenas = ArenaService.getArenas();
+    const idx = arenas.findIndex(a => a.id === arena.id);
+    if (idx >= 0) arenas[idx] = arena;
+    else arenas.push(arena);
+    localStorage.setItem(STORE_KEYS.ARENAS, JSON.stringify(arenas));
+  },
+  deleteArena: (id: string) => {
+    const arenas = ArenaService.getArenas().filter(a => a.id !== id);
+    localStorage.setItem(STORE_KEYS.ARENAS, JSON.stringify(arenas));
+  },
+  createEmptyArena: (): ArenaConfig => ({
+    id: crypto.randomUUID(),
+    name: 'NEW_ARENA',
+    description: 'A high-fidelity space for intelligence interaction.',
+    slug: 'arena-' + Math.random().toString(36).substring(7),
+    bot_ids: [],
+    theme: {
+      primary_color: '#3b82f6',
+      secondary_color: '#1e293b',
+      bg_color: '#020617',
+      accent_color: '#00f7ff',
+      font_family: 'Inter',
+      border_radius: '1rem',
+      animation_style: 'subtle',
+      glass_blur: '20px',
+      button_style: 'glass',
+      border_intensity: '1px'
+    },
+    created_at: new Date().toISOString()
+  })
 };
 
 export const CommerceService = {
   getEntitlements: (userId: string): Entitlement[] => {
-    const stored = localStorage.getItem(COMMERCE_KEYS.ENTITLEMENTS);
+    const stored = localStorage.getItem(STORE_KEYS.ENTITLEMENTS);
     if (!stored) return [];
     return JSON.parse(stored).filter((e: Entitlement) => e.user_id === userId);
   },
@@ -24,43 +70,41 @@ export const CommerceService = {
   },
 
   addEntitlement: (entitlement: Entitlement) => {
-    const all = JSON.parse(localStorage.getItem(COMMERCE_KEYS.ENTITLEMENTS) || '[]');
+    const all = JSON.parse(localStorage.getItem(STORE_KEYS.ENTITLEMENTS) || '[]');
     all.push(entitlement);
-    localStorage.setItem(COMMERCE_KEYS.ENTITLEMENTS, JSON.stringify(all));
+    localStorage.setItem(STORE_KEYS.ENTITLEMENTS, JSON.stringify(all));
   },
 
   setWallet: (link: WalletLink | null) => {
-    if (link) localStorage.setItem(COMMERCE_KEYS.WALLET, JSON.stringify(link));
-    else localStorage.removeItem(COMMERCE_KEYS.WALLET);
+    if (link) localStorage.setItem(STORE_KEYS.WALLET, JSON.stringify(link));
+    else localStorage.removeItem(STORE_KEYS.WALLET);
   },
 
   getWallet: (): WalletLink | null => {
-    const stored = localStorage.getItem(COMMERCE_KEYS.WALLET);
+    const stored = localStorage.getItem(STORE_KEYS.WALLET);
     return stored ? JSON.parse(stored) : null;
   }
 };
 
-/** Missing Services Implementation **/
-
 export const AuthService = {
   getUser: (): User | null => {
-    const stored = localStorage.getItem('zen_user');
+    const stored = localStorage.getItem(STORE_KEYS.USER);
     return stored ? JSON.parse(stored) : null;
   },
   login: async (): Promise<User> => {
     const mockUser: User = { id: 'usr-1', email: 'operator@zen.foundry' };
-    localStorage.setItem('zen_user', JSON.stringify(mockUser));
+    localStorage.setItem(STORE_KEYS.USER, JSON.stringify(mockUser));
     return mockUser;
   },
   logout: () => {
-    localStorage.removeItem('zen_user');
+    localStorage.removeItem(STORE_KEYS.USER);
     window.location.reload();
   },
   authorizeGoogle: async (): Promise<User> => {
     const user = AuthService.getUser();
     if (!user) throw new Error("No user");
     const updated = { ...user, google_authorized: true };
-    localStorage.setItem('zen_user', JSON.stringify(updated));
+    localStorage.setItem(STORE_KEYS.USER, JSON.stringify(updated));
     return updated;
   },
   setSubscription: (active: boolean) => {
@@ -70,7 +114,7 @@ export const AuthService = {
 
 export const BotService = {
   getBots: (): BotConfig[] => {
-    const stored = localStorage.getItem('zen_bots');
+    const stored = localStorage.getItem(STORE_KEYS.BOTS);
     return stored ? JSON.parse(stored) : [];
   },
   getBot: (id: string): BotConfig | undefined => {
@@ -81,11 +125,11 @@ export const BotService = {
     const idx = bots.findIndex(b => b.id === bot.id);
     if (idx >= 0) bots[idx] = bot;
     else bots.push(bot);
-    localStorage.setItem('zen_bots', JSON.stringify(bots));
+    localStorage.setItem(STORE_KEYS.BOTS, JSON.stringify(bots));
   },
   deleteBot: (id: string) => {
     const bots = BotService.getBots().filter(b => b.id !== id);
-    localStorage.setItem('zen_bots', JSON.stringify(bots));
+    localStorage.setItem(STORE_KEYS.BOTS, JSON.stringify(bots));
   },
   createEmptyBot: (): BotConfig => ({
     id: crypto.randomUUID(),
@@ -99,7 +143,10 @@ export const BotService = {
       { tool_id: 'web_search', name: 'Web Intel', description: 'Real-time search across global networks.', enabled: false },
       { tool_id: 'code_interpreter', name: 'Compute Kernel', description: 'Sandboxed code execution.', enabled: false },
     ],
-    features: { dual_response_mode: false, multi_agent_consult: false, thought_stream_visibility: true, quick_forge: false },
+    knowledge_ids: [],
+    starter_prompts: ['Analyze current system state', 'Synthesize neural patterns', 'Optimize operational logic'],
+    // Added missing xray_vision property to match the features interface.
+    features: { dual_response_mode: false, multi_agent_consult: false, thought_stream_visibility: true, quick_forge: false, xray_vision: false },
     workflow: { planning_strategy: 'linear' }
   }),
   createBotFromTemplate: (template: any): BotConfig => {
@@ -116,13 +163,18 @@ export const BotService = {
 
 export const AnalyticsService = {
   getUsage: (): UsageEvent[] => {
-    return JSON.parse(localStorage.getItem('zen_usage') || '[]');
+    return JSON.parse(localStorage.getItem(STORE_KEYS.USAGE) || '[]');
+  },
+  logUsage: (event: UsageEvent) => {
+    const usage = AnalyticsService.getUsage();
+    usage.push(event);
+    localStorage.setItem(STORE_KEYS.USAGE, JSON.stringify(usage));
   }
 };
 
 export const KeyService = {
   getKeys: (): ApiKey[] => {
-    return JSON.parse(localStorage.getItem('zen_keys') || '[]');
+    return JSON.parse(localStorage.getItem(STORE_KEYS.KEYS) || '[]');
   },
   saveKey: (providerId: string, key: string) => {
     const keys = KeyService.getKeys();
@@ -130,25 +182,25 @@ export const KeyService = {
     const idx = keys.findIndex(k => k.provider_id === providerId);
     if (idx >= 0) keys[idx] = { provider_id: providerId, key_snippet: snippet };
     else keys.push({ provider_id: providerId, key_snippet: snippet });
-    localStorage.setItem('zen_keys', JSON.stringify(keys));
+    localStorage.setItem(STORE_KEYS.KEYS, JSON.stringify(keys));
   },
   deleteKey: (providerId: string) => {
     const keys = KeyService.getKeys().filter(k => k.provider_id !== providerId);
-    localStorage.setItem('zen_keys', JSON.stringify(keys));
+    localStorage.setItem(STORE_KEYS.KEYS, JSON.stringify(keys));
   }
 };
 
 export const KnowledgeService = {
   getAssets: (): KnowledgeAsset[] => {
-    return JSON.parse(localStorage.getItem('zen_knowledge') || '[]');
+    return JSON.parse(localStorage.getItem(STORE_KEYS.KNOWLEDGE) || '[]');
   },
   saveAsset: async (asset: KnowledgeAsset) => {
     const assets = KnowledgeService.getAssets();
     assets.push(asset);
-    localStorage.setItem('zen_knowledge', JSON.stringify(assets));
+    localStorage.setItem(STORE_KEYS.KNOWLEDGE, JSON.stringify(assets));
   },
   deleteAsset: (id: string) => {
     const assets = KnowledgeService.getAssets().filter(a => a.id !== id);
-    localStorage.setItem('zen_knowledge', JSON.stringify(assets));
+    localStorage.setItem(STORE_KEYS.KNOWLEDGE, JSON.stringify(assets));
   }
 };

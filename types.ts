@@ -5,7 +5,7 @@ export interface Entitlement {
   id: string;
   user_id: string;
   type: EntitlementType;
-  resource_id: string; // Bot ID, Tool ID, or 'platform'
+  resource_id: string; 
   status: 'active' | 'expired' | 'pending' | 'revoked';
   valid_until?: string;
   metadata: {
@@ -17,64 +17,6 @@ export interface Entitlement {
   created_at: string;
   updated_at: string;
 }
-
-export interface ArenaProfile {
-  id: string;
-  creator_id: string;
-  slug: string;
-  name: string;
-  bio: string;
-  payout_config: {
-    stripe_connect_id?: string;
-    eth_payout_address?: string;
-    sol_payout_address?: string;
-  };
-  branding: {
-    primary_color: string;
-    logo_url?: string;
-  };
-}
-
-export interface Product {
-  id: string;
-  arena_id: string;
-  name: string;
-  description: string;
-  price_plans: PricePlan[];
-  resource_ids: string[]; // Bot IDs or Tool IDs included
-  status: 'draft' | 'published' | 'archived';
-}
-
-export interface PricePlan {
-  id: string;
-  type: 'one_time' | 'subscription' | 'usage';
-  amount: number;
-  currency: 'USD' | 'ETH' | 'SOL';
-  interval?: 'month' | 'year';
-  stripe_price_id?: string;
-  gumroad_product_id?: string;
-}
-
-export interface WalletLink {
-  address: string;
-  chain_id: number;
-  provider: 'metamask' | 'phantom' | 'coinbase' | 'walletconnect';
-  connected_at: string;
-}
-
-export interface PaymentEvent {
-  id: string;
-  source: 'stripe' | 'gumroad' | 'crypto';
-  external_id: string;
-  user_id: string;
-  amount: number;
-  currency: string;
-  product_id: string;
-  event_type: 'purchase_success' | 'subscription_updated' | 'refund' | 'chargeback';
-  timestamp: string;
-}
-
-/** Missing Types Fix **/
 
 export interface Model {
   model_id: string;
@@ -97,6 +39,7 @@ export interface Tool {
   name: string;
   description: string;
   enabled: boolean;
+  required_key?: string; // e.g. 'google' or 'openai'
 }
 
 export interface Artifact {
@@ -104,6 +47,16 @@ export interface Artifact {
   title: string;
   language: string;
   content: string;
+}
+
+export interface TelemetryStep {
+  id: string;
+  type: 'UPLINK' | 'RETRIEVAL' | 'REASONING' | 'TOOL_EXEC' | 'SYNTHESIS' | 'OUTPUT';
+  status: 'pending' | 'active' | 'complete' | 'error';
+  label: string;
+  detail?: string;
+  timestamp: number;
+  duration?: number;
 }
 
 export interface Message {
@@ -118,6 +71,8 @@ export interface Message {
   tokens?: number;
   artifacts?: Artifact[];
   selected_variant?: 'A' | 'B';
+  isStreaming?: boolean;
+  telemetry?: TelemetryStep[];
 }
 
 export interface BotConfig {
@@ -134,15 +89,63 @@ export interface BotConfig {
     thinking_budget: number;
   };
   tools: Tool[];
+  knowledge_ids: string[];
+  starter_prompts: string[];
   features: {
     dual_response_mode: boolean;
     multi_agent_consult: boolean;
     thought_stream_visibility: boolean;
     quick_forge: boolean;
+    xray_vision: boolean;
   };
   workflow: {
     planning_strategy: 'linear' | 'chain-of-thought' | 'react' | 'autonomous';
   };
+}
+
+export interface TOONChunk {
+  id: string;
+  text: string;
+  tags: string[];
+  vector_hash?: string;
+  token_count: number;
+}
+
+export interface KnowledgeAsset {
+  id: string;
+  name: string;
+  type: 'pdf' | 'url' | 'doc' | 'image' | 'text' | 'spreadsheet' | 'toon';
+  source: string;
+  content?: string; 
+  toon_chunks?: TOONChunk[];
+  tags: string[];
+  size?: string;
+  status: 'indexed' | 'pending';
+  created_at: string;
+}
+
+export interface ArenaTheme {
+  primary_color: string;
+  secondary_color: string;
+  bg_color: string;
+  accent_color: string;
+  font_family: string;
+  border_radius: string;
+  animation_style: 'none' | 'subtle' | 'dynamic' | 'glitch';
+  glass_blur: string;
+  button_style: 'flat' | 'glow' | 'glass' | 'outline';
+  border_intensity: string;
+}
+
+export interface ArenaConfig {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  bot_ids: string[];
+  theme: ArenaTheme;
+  custom_css?: string;
+  created_at: string;
 }
 
 export interface User {
@@ -164,12 +167,24 @@ export interface UsageEvent {
   status: 'SUCCESS' | 'FAILURE';
 }
 
-export interface KnowledgeAsset {
+export interface WalletLink {
+  address: string;
+  chain_id: number;
+  provider: string;
+  connected_at: string;
+}
+
+export interface PricePlan {
+  id: string;
+  type: string;
+  amount: number;
+  interval?: string;
+}
+
+export interface Product {
   id: string;
   name: string;
-  type: 'pdf' | 'url' | 'doc' | 'image';
-  source: string;
-  size?: string;
-  status: 'indexed' | 'pending';
-  created_at: string;
+  description?: string;
+  resource_ids: string[];
+  price_plans: PricePlan[];
 }

@@ -37,9 +37,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
       :root {
-        --glass-bg: rgba(1, 4, 12, 0.88);
-        --glass-border: rgba(255, 255, 255, 0.12);
+        --glass-bg: rgba(1, 4, 12, 0.94);
+        --glass-border: rgba(255, 255, 255, 0.08);
         --accent-blue: #0062ff;
+      }
+
+      html {
+        font-size: 14px; /* Scaled down for high-density professional view */
       }
 
       body {
@@ -64,8 +68,8 @@
         position: fixed;
         inset: 0;
         background: 
-          radial-gradient(circle at 0% 0%, rgba(0, 98, 255, 0.18) 0%, transparent 45%),
-          radial-gradient(circle at 100% 100%, rgba(0, 229, 255, 0.12) 0%, transparent 45%),
+          radial-gradient(circle at 0% 0%, rgba(0, 98, 255, 0.1) 0%, transparent 45%),
+          radial-gradient(circle at 100% 100%, rgba(0, 229, 255, 0.06) 0%, transparent 45%),
           #000103;
         z-index: -2;
       }
@@ -76,7 +80,7 @@
         background: linear-gradient(
           to bottom,
           transparent 0%,
-          rgba(0, 98, 255, 0.03) 50%,
+          rgba(0, 98, 255, 0.01) 50%,
           transparent 100%
         );
         background-size: 100% 4px;
@@ -106,43 +110,52 @@
       }
 
       .wire-path {
-        stroke: rgba(0, 98, 255, 0.15);
-        stroke-width: 1.2;
+        stroke: rgba(0, 98, 255, 0.1);
+        stroke-width: 0.8;
         fill: none;
         stroke-dasharray: 1000;
         stroke-dashoffset: 1000;
-        animation: dataStream 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        animation: dataStream 15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
       }
 
       .wire-bright {
         stroke: #00f7ff;
-        stroke-width: 1.8;
-        filter: drop-shadow(0 0 12px rgba(0, 247, 255, 0.7));
-        animation-duration: 8s;
+        stroke-width: 1.2;
+        filter: drop-shadow(0 0 10px rgba(0, 247, 255, 0.4));
+        animation-duration: 10s;
       }
 
       .liquid-glass {
         background: var(--glass-bg);
-        backdrop-filter: blur(50px) saturate(260%);
-        -webkit-backdrop-filter: blur(50px) saturate(260%);
+        backdrop-filter: blur(40px) saturate(220%);
+        -webkit-backdrop-filter: blur(40px) saturate(220%);
         border: 1px solid var(--glass-border);
         box-shadow: 
-          0 50px 100px -20px rgba(0, 0, 0, 0.95), 
-          inset 0 1px 3px rgba(255,255,255,0.1);
+          0 20px 50px -10px rgba(0, 0, 0, 0.9), 
+          inset 0 1px 1px rgba(255,255,255,0.04);
       }
 
       .tactical-grid {
         background-image: 
-          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-        background-size: 100px 100px;
+          linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+        background-size: 60px 60px;
       }
 
       ::-webkit-scrollbar { width: 5px; }
-      ::-webkit-scrollbar-thumb { background: rgba(0, 98, 255, 0.5); border-radius: 10px; }
+      ::-webkit-scrollbar-thumb { background: rgba(0, 98, 255, 0.4); border-radius: 10px; }
       
       .glow-text {
-        text-shadow: 0 0 30px rgba(0, 98, 255, 0.9);
+        text-shadow: 0 0 20px rgba(0, 98, 255, 0.6);
+      }
+      
+      .status-pulse {
+        animation: statusPulse 2s infinite;
+      }
+      @keyframes statusPulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.9); }
+        100% { opacity: 1; transform: scale(1); }
       }
     </style>
     <script type="importmap">
@@ -174,7 +187,7 @@
       <path class="wire-path" d="M -100,200 Q 400,0 1100,200" style="animation-delay: 0s;"></path>
       <path class="wire-path wire-bright" d="M 1100,450 Q 500,400 -100,450" style="animation-delay: -3s; stroke: url(#neon-grad);"></path>
       <path class="wire-path" d="M 500,-100 Q 600,500 500,1100" style="animation-delay: -6s;"></path>
-      <circle cx="500" cy="500" r="430" class="wire-path" stroke-dasharray="2,50" style="animation-duration: 40s; opacity: 0.3;"></circle>
+      <circle cx="500" cy="500" r="430" class="wire-path" stroke-dasharray="2,50" style="animation-duration: 40s; opacity: 0.15;"></circle>
     </svg>
 
     <div id="root"></div>

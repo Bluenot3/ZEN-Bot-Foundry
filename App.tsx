@@ -12,11 +12,10 @@ import Workspace from './pages/Workspace';
 import Marketplace from './pages/Marketplace';
 import Subscription from './pages/Subscription';
 import KnowledgeVault from './pages/KnowledgeVault';
+import ArenaDesigner from './pages/ArenaDesigner';
 import { AuthService } from './services/store';
 
 // WalletConnect / Reown Integration
-// Note: In a real production environment, we'd import { createAppKit } from '@reown/appkit'
-// For this environment, we'll simulate the provider and project ID setup.
 const PROJECT_ID = 'eaf0cf5bfb50b695c5c47f42a191bcca';
 
 export default function App() {
@@ -47,6 +46,8 @@ export default function App() {
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/create" element={<BotBuilder />} />
           <Route path="/edit/:id" element={<BotBuilder />} />
+          <Route path="/arena/new" element={<ArenaDesigner />} />
+          <Route path="/arena/edit/:id" element={<ArenaDesigner />} />
           <Route path="/keys" element={<KeysVault />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/subscription" element={<Subscription />} />

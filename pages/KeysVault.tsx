@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { KeyService, AuthService } from '../services/store';
 import { MODEL_REGISTRY } from '../constants';
 import { ApiKey, User } from '../types';
-import { Shield, Check, Trash, Plus, Cloud, Key, Lock, Layers, Zap, CheckCircle2, Search } from 'lucide-react';
+import { Shield, Check, Trash, Plus, Cloud, Key, Lock, Layers, Zap, CheckCircle2, Search, ListChecks } from 'lucide-react';
 
 const PROVIDERS = [
   { id: 'openai', name: 'OpenAI' },
@@ -12,10 +13,10 @@ const PROVIDERS = [
   { id: 'mistral', name: 'Mistral' },
   { id: 'meta', name: 'Meta / Llama' },
   { id: 'xai', name: 'xAI / Grok' },
-  { id: 'amazon', name: 'Amazon Bedrock' },
-  { id: 'nvidia', name: 'NVIDIA' },
   { id: 'cohere', name: 'Cohere' },
-  { id: 'specialized', name: 'Specialized (DeepSeek/Qwen)' },
+  { id: 'specialized', name: 'Specialized (DeepSeek)' },
+  { id: 'firecrawl', name: 'Firecrawl' },
+  { id: 'zapier', name: 'Zapier Central' },
 ];
 
 export default function KeysVault() {
@@ -46,6 +47,11 @@ export default function KeysVault() {
 
   const toggleModel = (id: string) => {
     setSelectedModels(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]);
+  };
+
+  const selectAll = () => {
+    const providerModels = MODEL_REGISTRY.filter(m => m.provider_id === selectedProvider).map(m => m.model_id);
+    setSelectedModels(providerModels);
   };
 
   const handleDelete = (providerId: string) => {
@@ -138,14 +144,23 @@ export default function KeysVault() {
             <h2 className="text-[12px] font-black text-slate-500 uppercase tracking-[0.4em]">Model Permissions</h2>
             {selectedProvider ? (
                <div className="liquid-glass p-8 rounded-[2.5rem] space-y-8 animate-in slide-in-from-right-8 duration-500 border-blue-500/40">
-                  <div className="flex items-center gap-4 border-b border-white/5 pb-6">
-                     <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
-                        <Layers size={24} />
+                  <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                     <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
+                           <Layers size={24} />
+                        </div>
+                        <div>
+                           <h4 className="text-[14px] font-black text-white uppercase">{selectedProvider} Hub</h4>
+                           <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">Select neural nodes</p>
+                        </div>
                      </div>
-                     <div>
-                        <h4 className="text-[14px] font-black text-white uppercase">{selectedProvider} Hub</h4>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">Select available neural nodes</p>
-                     </div>
+                     <button 
+                        onClick={selectAll}
+                        className="p-2 text-blue-500 hover:text-white transition-all"
+                        title="Select All"
+                     >
+                        <ListChecks size={20} />
+                     </button>
                   </div>
 
                   <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -163,6 +178,12 @@ export default function KeysVault() {
                            {selectedModels.includes(m.model_id) && <Check size={14} className="text-blue-500" />}
                         </button>
                      ))}
+                     {MODEL_REGISTRY.filter(m => m.provider_id === selectedProvider).length === 0 && (
+                        <div className="py-10 text-center opacity-30">
+                           <Zap size={24} className="mx-auto mb-3" />
+                           <span className="text-[9px] font-black uppercase tracking-widest">No nodes for this provider</span>
+                        </div>
+                     )}
                   </div>
 
                   <button 
