@@ -28,6 +28,7 @@ export interface Model {
     vision: boolean;
     long_context: boolean;
     tool_calling: boolean;
+    image_gen?: boolean;
   };
   context_window: number;
   cost_tier: 'low' | 'medium' | 'high';
@@ -39,7 +40,7 @@ export interface Tool {
   name: string;
   description: string;
   enabled: boolean;
-  required_key?: string; // e.g. 'google' or 'openai'
+  required_key?: string; 
 }
 
 export interface Artifact {
@@ -51,18 +52,25 @@ export interface Artifact {
 
 export interface TelemetryStep {
   id: string;
-  type: 'UPLINK' | 'RETRIEVAL' | 'REASONING' | 'TOOL_EXEC' | 'SYNTHESIS' | 'OUTPUT';
+  type: 'UPLINK' | 'RETRIEVAL' | 'REASONING' | 'TOOL_EXEC' | 'SYNTHESIS' | 'OUTPUT' | 'IMAGE_GEN' | 'ENTROPY_ANALYSIS';
   status: 'pending' | 'active' | 'complete' | 'error';
   label: string;
   detail?: string;
   timestamp: number;
   duration?: number;
+  metrics?: {
+    latency?: number;
+    tokens_per_sec?: number;
+    vram_usage?: number;
+    attention_heads?: number;
+  };
 }
 
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  image_url?: string;
   dual_content?: string;
   consultation_log?: string[];
   thinking_log?: string;
@@ -87,6 +95,14 @@ export interface BotConfig {
     primary_model: string;
     temperature: number;
     thinking_budget: number;
+  };
+  image_gen_config: {
+    enabled: boolean;
+    model: string;
+    style_prompt: string;
+    selected_chips: string[];
+    custom_chips: string[];
+    aspect_ratio: '1:1' | '16:9' | '9:16';
   };
   tools: Tool[];
   knowledge_ids: string[];

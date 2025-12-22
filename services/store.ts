@@ -59,7 +59,6 @@ export const CommerceService = {
     if (!stored) return [];
     return JSON.parse(stored).filter((e: Entitlement) => e.user_id === userId);
   },
-
   checkAccess: (userId: string, resourceId: string): boolean => {
     const entitlements = CommerceService.getEntitlements(userId);
     return entitlements.some(e => 
@@ -68,18 +67,15 @@ export const CommerceService = {
       (!e.valid_until || new Date(e.valid_until) > new Date())
     );
   },
-
   addEntitlement: (entitlement: Entitlement) => {
     const all = JSON.parse(localStorage.getItem(STORE_KEYS.ENTITLEMENTS) || '[]');
     all.push(entitlement);
     localStorage.setItem(STORE_KEYS.ENTITLEMENTS, JSON.stringify(all));
   },
-
   setWallet: (link: WalletLink | null) => {
     if (link) localStorage.setItem(STORE_KEYS.WALLET, JSON.stringify(link));
     else localStorage.removeItem(STORE_KEYS.WALLET);
   },
-
   getWallet: (): WalletLink | null => {
     const stored = localStorage.getItem(STORE_KEYS.WALLET);
     return stored ? JSON.parse(stored) : null;
@@ -138,15 +134,21 @@ export const BotService = {
     description: '',
     publish_state: 'draft',
     system_instructions: 'You are a professional assistant designed for high-fidelity intelligence.',
-    model_config: { primary_model: 'gemini-3-flash-preview', temperature: 0.7, thinking_budget: 0 },
+    model_config: { primary_model: 'gemini-3-flash', temperature: 0.7, thinking_budget: 0 },
+    image_gen_config: {
+      enabled: false,
+      model: 'nano-banana-2.5',
+      style_prompt: '',
+      selected_chips: ['Cinematic'],
+      custom_chips: [],
+      aspect_ratio: '1:1'
+    },
     tools: [
       { tool_id: 'web_search', name: 'Web Intel', description: 'Real-time search across global networks.', enabled: false },
-      { tool_id: 'code_interpreter', name: 'Compute Kernel', description: 'Sandboxed code execution.', enabled: false },
     ],
     knowledge_ids: [],
-    starter_prompts: ['Analyze current system state', 'Synthesize neural patterns', 'Optimize operational logic'],
-    // Added missing xray_vision property to match the features interface.
-    features: { dual_response_mode: false, multi_agent_consult: false, thought_stream_visibility: true, quick_forge: false, xray_vision: false },
+    starter_prompts: ['Analyze current system state'],
+    features: { dual_response_mode: false, multi_agent_consult: false, thought_stream_visibility: true, quick_forge: false, xray_vision: true },
     workflow: { planning_strategy: 'linear' }
   }),
   createBotFromTemplate: (template: any): BotConfig => {

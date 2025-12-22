@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronUp, Sparkles, Cpu, Activity, ShieldAlert,
   Copy, Share2, MoreHorizontal, Maximize2, Hash, Zap, 
   Hash as HashIcon, Type, BarChart3, RotateCw, BookOpen, Search,
-  Fingerprint, Microscope, Radio, History, Workflow, Eye
+  Fingerprint, Microscope, Radio, History, Workflow, Eye, ImageIcon
 } from 'lucide-react';
 import { BotConfig, Message, Artifact, TelemetryStep } from '../types';
 import { ModelRouter } from '../services/llm';
@@ -25,7 +25,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
   const [isTyping, setIsTyping] = useState(false);
   const [activeArtifacts, setActiveArtifacts] = useState<Artifact[] | null>(null);
   const [showThinking, setShowThinking] = useState<Record<string, boolean>>({});
-  const [xrayActive, setXrayActive] = useState(false);
+  const [xrayActive, setXrayActive] = useState(bot.features.xray_vision);
   const [currentTelemetry, setCurrentTelemetry] = useState<TelemetryStep[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -39,7 +39,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
       setMessages([{
         id: 'init',
         role: 'assistant',
-        content: `UPLINK_SECURE: ${bot.name} INITIALIZED.\n\nDIRECTIVE: ${bot.description || 'Awaiting operational tasks.'}\n\n[NEURAL_ENGINE]: ${bot.model_config.primary_model.toUpperCase()}\n[VAULT_ASSETS]: ${bot.knowledge_ids?.length || 0} ATTACHED\n\nSYSTEM_STATUS: NOMINAL`,
+        content: `UPLINK_SECURE: ${bot.name} INITIALIZED.\n\nDIRECTIVE: ${bot.description || 'Awaiting operational tasks.'}\n\n[NEURAL_ENGINE]: ${bot.model_config.primary_model.toUpperCase()}\n[IMAGE_GEN]: ${bot.image_gen_config.enabled ? 'ACTIVE' : 'OFFLINE'}\n\nSYSTEM_STATUS: NOMINAL`,
         timestamp: Date.now()
       }]);
     }
@@ -88,6 +88,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
       setMessages(prev => prev.map(m => m.id === botMsgId ? { 
         ...m, 
         content: response.content,
+        image_url: response.image_url,
         thinking_log: response.thinking_log,
         tokens: response.tokens,
         artifacts: response.artifacts,
@@ -126,7 +127,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
                </span>
                <span className="w-px h-2 bg-white/10"></span>
                <span className="text-[8px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                 <BookOpen size={10} className="text-blue-500" /> {bot.knowledge_ids?.length || 0} ASSETS
+                 <ImageIcon size={10} className={bot.image_gen_config.enabled ? "text-cyan-400" : "text-slate-700"} /> IMG_{bot.image_gen_config.enabled ? 'ON' : 'OFF'}
                </span>
             </div>
           </div>
@@ -158,11 +159,6 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
                      {msg.role === 'user' ? 'OPERATOR' : 'NEURAL_NODE'}
                    </span>
                    <div className="h-px flex-1 bg-white/[0.03]"></div>
-                   {msg.timestamp && (
-                     <span className="text-[8px] font-mono text-slate-700 uppercase">
-                       {new Date(msg.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                     </span>
-                   )}
                 </div>
 
                 <div className={`group relative p-5 rounded-2xl border shadow-xl transition-all ${
@@ -173,6 +169,26 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
                   <div className="text-[13px] leading-relaxed whitespace-pre-wrap font-mono prose prose-invert max-w-none">
                     {msg.content}
                   </div>
+
+                  {msg.image_url && (
+                    <div className="mt-4 rounded-xl overflow-hidden border border-white/10 shadow-2xl animate-in zoom-in-95 duration-700">
+                       <img src={msg.image_url} alt="Generated Neural Asset" className="w-full h-auto object-cover max-h-[500px]" />
+                       <div className="p-3 bg-black/60 flex justify-between items-center border-t border-white/5">
+                          <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">DIFFUSION_MANIFEST_SUCCESS</span>
+                          <button 
+                            onClick={() => {
+                               const a = document.createElement('a');
+                               a.href = msg.image_url!;
+                               a.download = `zen_gen_${Date.now()}.png`;
+                               a.click();
+                            }}
+                            className="p-1.5 rounded-lg bg-white/5 text-slate-500 hover:text-white transition-colors"
+                          >
+                             <Share2 size={12} />
+                          </button>
+                       </div>
+                    </div>
+                  )}
                   
                   {/* Stats & Tools */}
                   {!msg.isStreaming && msg.role === 'assistant' && (
@@ -240,14 +256,6 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
       </div>
 
       {activeArtifacts && <ArtifactPane artifacts={activeArtifacts} onClose={() => setActiveArtifacts(null)} />}
-    </div>
-  );
-}
-
-function ActionButton({ onClick, icon: Icon, tooltip }: any) {
-  return (
-    <div className="relative group/action">
-      <button onClick={onClick} className="p-1.5 rounded-lg bg-black/80 text-slate-500 hover:text-white border border-white/10 transition-all"><Icon size={10} /></button>
     </div>
   );
 }
