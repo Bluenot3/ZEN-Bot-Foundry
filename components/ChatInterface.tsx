@@ -34,16 +34,24 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, currentTelemetry]);
 
+  // Handle re-initialization or bot name/directive updates
   useEffect(() => {
     if (messages.length === 0) {
       setMessages([{
         id: 'init',
         role: 'assistant',
-        content: `UPLINK_SECURE: ${bot.name} INITIALIZED.\n\nDIRECTIVE: ${bot.description || 'Awaiting operational tasks.'}\n\n[NEURAL_ENGINE]: ${bot.model_config.primary_model.toUpperCase()}\n[IMAGE_GEN]: ${bot.image_gen_config.enabled ? 'ACTIVE' : 'OFFLINE'}\n\nSYSTEM_STATUS: NOMINAL`,
+        content: `UPLINK_SECURE: ${bot.name || 'NEW_MANIFEST'} INITIALIZED.\n\nDIRECTIVE: ${bot.description || 'Awaiting operational tasks.'}\n\n[NEURAL_ENGINE]: ${bot.model_config.primary_model.toUpperCase()}\n[IMAGE_GEN]: ${bot.image_gen_config.enabled ? 'ACTIVE' : 'OFFLINE'}\n\nSYSTEM_STATUS: NOMINAL`,
         timestamp: Date.now()
       }]);
+    } else {
+      // Update existing init message if bot name changes during setup
+      setMessages(prev => prev.map(m => m.id === 'init' ? {
+        ...m,
+        content: `UPLINK_SECURE: ${bot.name || 'NEW_MANIFEST'} INITIALIZED.\n\nDIRECTIVE: ${bot.description || 'Awaiting operational tasks.'}\n\n[NEURAL_ENGINE]: ${bot.model_config.primary_model.toUpperCase()}\n[IMAGE_GEN]: ${bot.image_gen_config.enabled ? 'ACTIVE' : 'OFFLINE'}\n\nSYSTEM_STATUS: NOMINAL`
+      } : m));
     }
-  }, [bot]);
+    setXrayActive(bot.features.xray_vision);
+  }, [bot.name, bot.model_config.primary_model, bot.image_gen_config.enabled, bot.features.xray_vision]);
 
   const handleSend = async (forcedInput?: string) => {
     const textToSend = forcedInput || input;
@@ -118,7 +126,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
           </div>
           <div>
             <h3 className="text-[12px] font-black text-white tracking-widest uppercase flex items-center gap-2">
-              {bot.name}
+              {bot.name || 'NEW_NODE'}
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
             </h3>
             <div className="flex items-center gap-3 mt-1">

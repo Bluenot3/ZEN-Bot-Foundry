@@ -12,32 +12,64 @@ export const IMAGE_STYLE_CHIPS = [
   "Ethereal", "Brutalist", "Noir", "Renaissance", "Surrealism"
 ];
 
+export const COMPATIBLE_IMAGE_MODELS = {
+  openai: [
+    { id: 'gpt-image-1.5', name: 'GPT-IMG 1.5' },
+    { id: 'gpt-image-1.0', name: 'GPT-IMG 1.0' },
+    { id: 'dall-e-3', name: 'DALL-E 3' }
+  ],
+  google: [
+    { id: 'nano-banana-pro', name: 'Nano Banana Pro' },
+    { id: 'nano-banana', name: 'Nano Banana' }
+  ]
+};
+
 export const MODEL_REGISTRY: Model[] = [
-  // OPENAI - Production Frontier
-  { model_id: 'o1', provider_id: 'openai', display_name: 'o1 (Advanced Reasoning)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 128000, cost_tier: 'high', speed_tier: 'balanced' },
+  // --- OPENAI (Frontier & Future) ---
+  { model_id: 'gpt-5.2', provider_id: 'openai', display_name: 'GPT-5.2 (Apex)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
+  { model_id: 'gpt-5.1-thinking', provider_id: 'openai', display_name: 'GPT-5.1 Thinking', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'high', speed_tier: 'balanced' },
+  { model_id: 'gpt-5.1-fast', provider_id: 'openai', display_name: 'GPT-5.1 Fast', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: false }, context_window: 500000, cost_tier: 'medium', speed_tier: 'fast' },
+  { model_id: 'gpt-5.1', provider_id: 'openai', display_name: 'GPT-5.1', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'high', speed_tier: 'balanced' },
+  
+  // --- OPENAI (Visual) ---
+  { model_id: 'gpt-image-1.5', provider_id: 'openai', display_name: 'GPT-Image 1.5 (Hyper-Real)', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 16000, cost_tier: 'high', speed_tier: 'balanced' },
+  { model_id: 'gpt-image-1.0', provider_id: 'openai', display_name: 'GPT-Image 1.0', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 16000, cost_tier: 'medium', speed_tier: 'fast' },
+  { model_id: 'dall-e-3', provider_id: 'openai', display_name: 'DALL-E 3', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 4000, cost_tier: 'medium', speed_tier: 'balanced' },
+
+  // --- OPENAI (Legacy Frontier) ---
+  { model_id: 'o1', provider_id: 'openai', display_name: 'o1 (Heavy Reasoning)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 128000, cost_tier: 'high', speed_tier: 'balanced' },
   { model_id: 'o1-mini', provider_id: 'openai', display_name: 'o1-mini', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 128000, cost_tier: 'low', speed_tier: 'fast' },
   { model_id: 'gpt-4o', provider_id: 'openai', display_name: 'GPT-4o', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 128000, cost_tier: 'medium', speed_tier: 'fast' },
-  { model_id: 'gpt-4o-mini', provider_id: 'openai', display_name: 'GPT-4o-mini', capabilities: { reasoning: false, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 128000, cost_tier: 'low', speed_tier: 'fast' },
 
-  // GOOGLE - Production Gemini
-  { model_id: 'gemini-2.5-flash-preview', provider_id: 'google', display_name: 'Gemini 2.5 Flash', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'low', speed_tier: 'fast' },
-  { model_id: 'gemini-3-pro-preview', provider_id: 'google', display_name: 'Gemini 3 Pro', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
+  // --- GOOGLE (Gemini 3 & Nano Series) ---
+  { model_id: 'gemini-3-pro-preview', provider_id: 'google', display_name: 'Gemini 3 Pro (Multimodal)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
   { model_id: 'gemini-3-flash-preview', provider_id: 'google', display_name: 'Gemini 3 Flash', capabilities: { reasoning: false, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'low', speed_tier: 'fast' },
+  { model_id: 'gemini-3-ultra-preview', provider_id: 'google', display_name: 'Gemini 3 Ultra (Experimental)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
+  { model_id: 'gemini-2.5-flash-preview', provider_id: 'google', display_name: 'Gemini 2.5 Flash', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'low', speed_tier: 'fast' },
+  
+  // --- GOOGLE (Visual Core) ---
+  { model_id: 'nano-banana-pro', provider_id: 'google', display_name: 'Nano Banana Pro', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 64000, cost_tier: 'medium', speed_tier: 'fast' },
+  { model_id: 'nano-banana', provider_id: 'google', display_name: 'Nano Banana', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 32000, cost_tier: 'low', speed_tier: 'fast' },
 
-  // ANTHROPIC - Production Claude
+  // --- ANTHROPIC (Claude 4.5 Series) ---
+  { model_id: 'claude-4.5-opus', provider_id: 'anthropic', display_name: 'Claude 4.5 Opus', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 500000, cost_tier: 'high', speed_tier: 'balanced' },
+  { model_id: 'claude-4.5-sonnet', provider_id: 'anthropic', display_name: 'Claude 4.5 Sonnet', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 500000, cost_tier: 'medium', speed_tier: 'fast' },
   { model_id: 'claude-3-5-sonnet-20241022', provider_id: 'anthropic', display_name: 'Claude 3.5 Sonnet', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 200000, cost_tier: 'medium', speed_tier: 'fast' },
   { model_id: 'claude-3-5-haiku-20241022', provider_id: 'anthropic', display_name: 'Claude 3.5 Haiku', capabilities: { reasoning: false, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 200000, cost_tier: 'low', speed_tier: 'fast' },
-  { model_id: 'claude-3-opus-20240229', provider_id: 'anthropic', display_name: 'Claude 3 Opus', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 200000, cost_tier: 'high', speed_tier: 'balanced' },
 
-  // DEEPSEEK - Open Frontier
-  { model_id: 'deepseek-chat', provider_id: 'deepseek', display_name: 'DeepSeek-V3', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 64000, cost_tier: 'low', speed_tier: 'fast' },
-  { model_id: 'deepseek-reasoner', provider_id: 'deepseek', display_name: 'DeepSeek-R1', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: false }, context_window: 128000, cost_tier: 'low', speed_tier: 'balanced' },
+  // --- DEEPSEEK (Open Frontier) ---
+  { model_id: 'deepseek-v3', provider_id: 'deepseek', display_name: 'DeepSeek-V3', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 64000, cost_tier: 'low', speed_tier: 'fast' },
+  { model_id: 'deepseek-r1', provider_id: 'deepseek', display_name: 'DeepSeek-R1 (Reasoning)', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: false }, context_window: 128000, cost_tier: 'low', speed_tier: 'balanced' },
 
-  // MISTRAL
+  // --- MISTRAL ---
   { model_id: 'mistral-large-latest', provider_id: 'mistral', display_name: 'Mistral Large 2', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 128000, cost_tier: 'medium', speed_tier: 'balanced' },
   { model_id: 'pixtral-12b-2409', provider_id: 'mistral', display_name: 'Pixtral 12B', capabilities: { reasoning: false, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 128000, cost_tier: 'low', speed_tier: 'fast' },
 
-  // PERPLEXITY
+  // --- META (Llama 4 Future) ---
+  { model_id: 'llama-4-405b', provider_id: 'meta', display_name: 'Llama 4 405B (Future)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 256000, cost_tier: 'high', speed_tier: 'balanced' },
+  { model_id: 'llama-3.1-405b-instruct', provider_id: 'meta', display_name: 'Llama 3.1 405B', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 128000, cost_tier: 'medium', speed_tier: 'balanced' },
+
+  // --- PERPLEXITY ---
   { model_id: 'sonar-reasoning-pro', provider_id: 'perplexity', display_name: 'Sonar Reasoning Pro', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: true }, context_window: 128000, cost_tier: 'medium', speed_tier: 'balanced' },
 ];
 
@@ -54,7 +86,6 @@ export const AVAILABLE_TOOLS: Tool[] = [
   { tool_id: 'tts_synth', name: 'Neural Voice', description: 'Convert text responses into high-fidelity audio streams.', enabled: false },
 ];
 
-// Fix: Added BOT_TEMPLATES to fix Marketplace error
 export const BOT_TEMPLATES = [
   {
     name: "Strategy Master",

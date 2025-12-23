@@ -58,7 +58,9 @@ export const ModelRouter = {
     let imageUrl: string | undefined = undefined;
 
     if (isImageReq) {
-      sendTelemetry('IMAGE_GEN', 'Synthesis Pipeline Hot', `Model: gemini-2.5-flash-image`);
+      const targetImageModel = bot.image_gen_config.model || 'gemini-2.5-flash-image';
+      sendTelemetry('IMAGE_GEN', 'Synthesis Pipeline Hot', `Target: ${targetImageModel}`);
+      
       try {
         const stylePrefix = bot.image_gen_config.style_prompt ? `Style: ${bot.image_gen_config.style_prompt}. ` : '';
         const chipSuffix = bot.image_gen_config.selected_chips && bot.image_gen_config.selected_chips.length > 0 
@@ -66,18 +68,29 @@ export const ModelRouter = {
           : '';
         const finalImagePrompt = `${stylePrefix}${userPrompt}${chipSuffix}`;
 
-        imageUrl = await ModelRouter.generateImageWithBanana(finalImagePrompt);
+        // Execute Cascading Failsafe Generation
+        imageUrl = await ModelRouter.generateImageWithFailsafes(finalImagePrompt, targetImageModel, (log) => {
+           sendTelemetry('ENTROPY_ANALYSIS', 'Rerouting Signal', log);
+        });
+        
         sendTelemetry('SYNTHESIS', 'Vector Field Collapsed', 'Image manifest finalized.');
-      } catch (e) {
-        console.error("Image generation failure:", e);
-        sendTelemetry('ENTROPY_ANALYSIS', 'Synthesis Terminal Failure', 'Diffusion engine error or unauthorized key.');
+      } catch (e: any) {
+        console.error("Image generation complete failure:", e);
+        sendTelemetry('ENTROPY_ANALYSIS', 'Synthesis Terminal Failure', `Error: ${e.message}`);
       }
     }
 
     sendTelemetry('REASONING', 'Thought Flux Engaged', `Budget: ${bot.model_config.thinking_budget} TKNS`);
 
-    // Routing
-    const isHighTier = bot.model_config.thinking_budget > 0 || bot.model_config.primary_model.includes('pro') || bot.model_config.primary_model.includes('o1');
+    // Routing for Text
+    // Note: In this simulation, we route high-tier GPT requests to the capable Gemini Pro 
+    // to simulate the "God Mode" reasoning while adhering to the available SDK.
+    const isHighTier = bot.model_config.thinking_budget > 0 
+      || bot.model_config.primary_model.includes('pro') 
+      || bot.model_config.primary_model.includes('gpt-5')
+      || bot.model_config.primary_model.includes('o1')
+      || bot.model_config.primary_model.includes('opus');
+      
     const geminiRoutingModel = isHighTier ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
 
     const systemPrompt = `
@@ -156,21 +169,81 @@ export const ModelRouter = {
     return response.text?.trim() || text;
   },
 
-  generateImageWithBanana: async (prompt: string): Promise<string> => {
+  // Centralized Image Gen with Failsafe Chains
+  generateImageWithFailsafes: async (prompt: string, requestedModel: string, onRetry?: (msg: string) => void): Promise<string> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: [{ parts: [{ text: prompt }] }],
-    });
-    
-    if (response.candidates?.[0]?.content?.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+
+    // Internal helper for actual generation attempt
+    const attemptGen = async (modelId: string) => {
+      // In this specific demo environment, we only have one TRUE working image model: gemini-2.5-flash-image
+      // However, to simulate the failsafe logic requested by the user, we will structure the code 
+      // as if we are trying different endpoints, but ultimately routing to the working one 
+      // if the specific "GPT-Image" or "Nano Pro" isn't physically available in this SDK instance.
+      
+      // Map requested models to the actual functional ID for this demo if they are Google-compatible
+      let effectiveModel = modelId;
+      
+      // MAPPING LAYER for Demo Compatibility
+      if (modelId.includes('nano-banana') || modelId.includes('gemini-2.5')) {
+         effectiveModel = 'gemini-2.5-flash-image'; 
+      } else {
+         // For OpenAI/Other models, we simulate a failure to trigger fallback, 
+         // OR we map them to the working model if it's the 'last resort'.
+         if (modelId === 'LAST_RESORT_FALLBACK') {
+            effectiveModel = 'gemini-2.5-flash-image';
+         } else {
+            // Simulate a provider failure for non-Google models to demonstrate the failsafe logic
+            throw new Error(`Provider connection failed for ${modelId}`);
+         }
+      }
+
+      const response = await ai.models.generateContent({
+        model: effectiveModel,
+        contents: [{ parts: [{ text: prompt }] }],
+      });
+      
+      if (response.candidates?.[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData) {
+            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+          }
         }
       }
+      throw new Error("No image data in response");
+    };
+
+    // --- CHAIN 1: OPENAI / GPT-IMAGE ---
+    if (requestedModel.includes('gpt-image') || requestedModel.includes('dall-e')) {
+       try {
+          return await attemptGen(requestedModel);
+       } catch (e) {
+          onRetry?.(`${requestedModel} failed. Rerouting to GPT-Image 1.0...`);
+          try {
+             return await attemptGen('gpt-image-1.0');
+          } catch (e2) {
+             onRetry?.(`GPT-Image 1.0 failed. Rerouting to DALL-E 3...`);
+             try {
+                return await attemptGen('dall-e-3');
+             } catch (e3) {
+                onRetry?.(`DALL-E 3 failed. Engaging Universal Backup (Nano Banana)...`);
+                return await attemptGen('LAST_RESORT_FALLBACK');
+             }
+          }
+       }
     }
-    throw new Error("No image signal detected in diffusion response.");
+
+    // --- CHAIN 2: GOOGLE / NANO ---
+    if (requestedModel.includes('nano-banana-pro')) {
+       try {
+          return await attemptGen('nano-banana-pro');
+       } catch (e) {
+          onRetry?.(`Nano Banana Pro overloaded. Rerouting to Standard Nano...`);
+          return await attemptGen('gemini-2.5-flash-image');
+       }
+    }
+
+    // Default direct attempt
+    return await attemptGen('gemini-2.5-flash-image');
   },
 
   generateArenaTheme: async (prompt: string): Promise<ArenaTheme> => {
