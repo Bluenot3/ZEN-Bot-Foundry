@@ -7,9 +7,7 @@ export const IMAGE_STYLE_CHIPS = [
   "Minimalist", "Vaporwave", "Double Exposure", "Tilt-Shift", "Isometric", 
   "Steampunk", "Hyper-Realistic", "Sketch", "Pop Art", "Gothic", 
   "Origami", "Glitch Art", "Synthwave", "Low Poly", "Macro Photography", 
-  "Unreal Engine 5", "Charcoal", "Ukiyo-e", "Bokeh", "Claymation",
-  "Product Shot", "Architectural", "Fantasy Map", "Neon Sign", "Paper Cut",
-  "Ethereal", "Brutalist", "Noir", "Renaissance", "Surrealism"
+  "Unreal Engine 5", "Charcoal", "Ukiyo-e", "Bokeh", "Claymation"
 ];
 
 export const COMPATIBLE_IMAGE_MODELS = {
@@ -25,26 +23,12 @@ export const COMPATIBLE_IMAGE_MODELS = {
 };
 
 export const MODEL_REGISTRY: Model[] = [
-  // --- OPENAI (GPT-5 & Future Series) ---
   { model_id: 'gpt-5.2', provider_id: 'openai', display_name: 'GPT-5.2 (Apex)', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
   { model_id: 'gpt-5.1-thinking', provider_id: 'openai', display_name: 'GPT-5.1 Thinking', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'high', speed_tier: 'balanced' },
   { model_id: 'gpt-5.1-fast', provider_id: 'openai', display_name: 'GPT-5.1 Fast', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: false }, context_window: 500000, cost_tier: 'medium', speed_tier: 'fast' },
-  { model_id: 'gpt-5.1', provider_id: 'openai', display_name: 'GPT-5.1', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'high', speed_tier: 'balanced' },
-  { model_id: 'o1-pro', provider_id: 'openai', display_name: 'o1 Pro Reasoning', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 200000, cost_tier: 'high', speed_tier: 'balanced' },
-  
-  // --- GOOGLE (Gemini 3 & Nano Series) ---
-  { model_id: 'gemini-3-ultra-preview', provider_id: 'google', display_name: 'Gemini 3 Ultra', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
   { model_id: 'gemini-3-pro-preview', provider_id: 'google', display_name: 'Gemini 3 Pro', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 2000000, cost_tier: 'high', speed_tier: 'balanced' },
   { model_id: 'gemini-3-flash-preview', provider_id: 'google', display_name: 'Gemini 3 Flash', capabilities: { reasoning: false, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 1000000, cost_tier: 'low', speed_tier: 'fast' },
-  { model_id: 'nano-banana-pro', provider_id: 'google', display_name: 'Nano Banana Pro', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 64000, cost_tier: 'medium', speed_tier: 'fast' },
-  { model_id: 'nano-banana', provider_id: 'google', display_name: 'Nano Banana (Visual)', capabilities: { reasoning: false, coding: false, vision: true, long_context: false, tool_calling: false, image_gen: true }, context_window: 32000, cost_tier: 'low', speed_tier: 'fast' },
-
-  // --- ANTHROPIC (Claude 4.5 Series) ---
   { model_id: 'claude-4.5-opus', provider_id: 'anthropic', display_name: 'Claude 4.5 Opus', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 800000, cost_tier: 'high', speed_tier: 'balanced' },
-  { model_id: 'claude-4.5-sonnet', provider_id: 'anthropic', display_name: 'Claude 4.5 Sonnet', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true }, context_window: 800000, cost_tier: 'medium', speed_tier: 'fast' },
-  
-  // --- LEGACY FRONTIER ---
-  { model_id: 'gpt-4o', provider_id: 'openai', display_name: 'GPT-4o', capabilities: { reasoning: true, coding: true, vision: true, long_context: true, tool_calling: true, image_gen: true }, context_window: 128000, cost_tier: 'medium', speed_tier: 'fast' },
   { model_id: 'deepseek-r1', provider_id: 'deepseek', display_name: 'DeepSeek-R1 (Reasoning)', capabilities: { reasoning: true, coding: true, vision: false, long_context: true, tool_calling: false }, context_window: 128000, cost_tier: 'low', speed_tier: 'balanced' },
 ];
 

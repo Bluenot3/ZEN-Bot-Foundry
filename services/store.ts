@@ -134,10 +134,21 @@ export const BotService = {
     description: '',
     publish_state: 'draft',
     system_instructions: 'You are a professional assistant designed for high-fidelity intelligence.',
-    model_config: { primary_model: 'gemini-3-flash', temperature: 0.7, thinking_budget: 0 },
+    system_reminder: 'Focus on being concise and technically accurate.',
+    positive_directives: 'Provide clear, logical, and evidence-based responses.',
+    negative_directives: 'Avoid excessive jargon, filler words, or unsubstantiated claims.',
+    model_config: { 
+      primary_model: 'gemini-3-flash-preview', 
+      temperature: 0.7, 
+      thinking_budget: 0,
+      top_p: 0.95,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      stop_sequences: []
+    },
     image_gen_config: {
       enabled: false,
-      model: 'nano-banana-2.5',
+      model: 'nano-banana-pro',
       style_prompt: '',
       selected_chips: ['Cinematic'],
       custom_chips: [],

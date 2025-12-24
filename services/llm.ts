@@ -40,47 +40,47 @@ export const ModelRouter = {
     };
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    sendTelemetry('UPLINK', 'Model Handshake Established', `Route: ${bot.model_config.primary_model}`);
+    sendTelemetry('UPLINK', 'Neural Handshake Complete', `Node: ${bot.model_config.primary_model}`);
 
     // Knowledge Retrieval
     const assets = KnowledgeService.getAssets();
     const selectedKnowledge = assets.filter(a => (bot.knowledge_ids || []).includes(a.id));
-    let knowledgeContext = selectedKnowledge.map(k => `[DATA_NODE: ${k.name}]\n${k.content || k.source}`).join('\n');
+    let knowledgeContext = selectedKnowledge.map(k => `[VAULT_NODE: ${k.name}]\n${k.content || k.source}`).join('\n');
 
     // Image Request Logic
-    const imageIndicators = [/generate image/i, /create image/i, /draw/i, /visualize/i, /image of/i];
+    const imageIndicators = [/generate image/i, /create image/i, /draw/i, /visualize/i, /image of/i, /picture of/i];
     const isImageReq = bot.image_gen_config.enabled && imageIndicators.some(regex => regex.test(userPrompt));
 
     let imageUrl: string | undefined = undefined;
 
     if (isImageReq) {
-      const targetImageModel = bot.image_gen_config.model || 'nano-banana';
-      sendTelemetry('IMAGE_GEN', 'Synthesis Initialization', `Visual Core: ${targetImageModel}`);
+      const targetImageModel = bot.image_gen_config.model || 'nano-banana-pro';
+      sendTelemetry('IMAGE_GEN', 'Synthesis Initialization', `Visual Engine: ${targetImageModel}`);
       
       try {
         imageUrl = await ModelRouter.generateImageWithFailsafes(userPrompt, targetImageModel, (log) => {
-           sendTelemetry('ENTROPY_ANALYSIS', 'Model Cascade Triggered', log);
+           sendTelemetry('ENTROPY_ANALYSIS', 'Model Reroute Signal', log);
         });
       } catch (e: any) {
         sendTelemetry('ENTROPY_ANALYSIS', 'Synthesis Terminal Failure', e.message);
       }
     }
 
-    // Dynamic Routing
-    const isHighTier = bot.model_config.thinking_budget > 0 
-      || bot.model_config.primary_model.includes('pro') 
-      || bot.model_config.primary_model.includes('gpt-5')
-      || bot.model_config.primary_model.includes('opus');
-      
-    const geminiRoutingModel = isHighTier ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
-
     const artifactsEnabled = bot.tools.some(t => t.tool_id === 'code_artifact_engine');
-    const systemPrompt = `
-      ${bot.system_instructions}
-      [CONTEXT]: ${knowledgeContext || "None"}
-      [ARTIFACTS_ENGINE]: ${artifactsEnabled ? 'ACTIVE. When writing code, use standard Markdown code blocks. I will extract them into a previewable UI.' : 'OFFLINE'}
-      [ENGINE_ID]: ${bot.model_config.primary_model}
-    `;
+    
+    // Advanced System Instruction Assembly
+    const systemPromptParts = [
+      bot.system_instructions,
+      bot.positive_directives ? `\n[BEHAVIORAL_FOCUS]: ${bot.positive_directives}` : '',
+      bot.negative_directives ? `\n[BEHAVIORAL_AVOIDANCE]: ${bot.negative_directives}` : '',
+      knowledgeContext ? `\n[CONTEXT_VAULT]: ${knowledgeContext}` : '\n[CONTEXT_VAULT]: Vault offline.',
+      artifactsEnabled ? '\n[ARTIFACT_ENGINE]: ACTIVE. When providing structural code (HTML/CSS/JS/React), enclose it in standard Markdown blocks. This will be automatically rendered in the side-pane for the user.' : '\n[ARTIFACT_ENGINE]: DISABLED',
+      `\n[ENGINE_SPEC]: ${bot.model_config.primary_model}`,
+      '\n[MODE]: ADAPTIVE_PROFESSIONAL',
+      bot.system_reminder ? `\n[FINAL_ANCHOR_REMINDER]: ${bot.system_reminder}` : ''
+    ];
+
+    const systemPrompt = systemPromptParts.filter(Boolean).join('\n');
 
     const contents = history.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -89,14 +89,16 @@ export const ModelRouter = {
     contents.push({ role: 'user', parts: [{ text: userPrompt }] });
 
     const responseStream = await ai.models.generateContentStream({
-      model: geminiRoutingModel,
+      model: bot.model_config.primary_model.includes('gpt-5') || bot.model_config.primary_model.includes('pro') ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview',
       contents,
       config: {
         systemInstruction: systemPrompt,
         temperature: bot.model_config.temperature,
+        topP: bot.model_config.top_p,
         thinkingConfig: bot.model_config.thinking_budget > 0 
           ? { thinkingBudget: bot.model_config.thinking_budget } 
-          : undefined
+          : undefined,
+        stopSequences: bot.model_config.stop_sequences?.length > 0 ? bot.model_config.stop_sequences : undefined,
       }
     });
 
@@ -114,16 +116,16 @@ export const ModelRouter = {
       }
     }
 
-    // Artifact Extraction
+    // High-Precision Artifact Extraction
     const artifacts: Artifact[] = [];
     if (artifactsEnabled) {
-      const codeRegex = /```(\w+)?\n([\s\S]*?)```/g;
+      const codeRegex = /```(html|css|javascript|typescript|jsx|tsx|json|python)\n([\s\S]{150,}?)```/gi;
       let match;
       while ((match = codeRegex.exec(fullText)) !== null) {
         artifacts.push({
           id: crypto.randomUUID(),
-          title: `Code Module (${match[1] || 'txt'})`,
-          language: match[1] || 'plaintext',
+          title: `Synthesis_${match[1].toUpperCase()}_Node`,
+          language: match[1].toLowerCase(),
           content: match[2].trim()
         });
       }
@@ -143,9 +145,8 @@ export const ModelRouter = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const attemptGen = async (modelId: string) => {
-      let effectiveModel = 'gemini-2.5-flash-image'; // Actual working model for this environment
       const response = await ai.models.generateContent({
-        model: effectiveModel,
+        model: 'gemini-2.5-flash-image',
         contents: [{ parts: [{ text: prompt }] }],
       });
       
@@ -153,31 +154,18 @@ export const ModelRouter = {
       if (part?.inlineData) {
         return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
       }
-      throw new Error("Empty buffer");
+      throw new Error("Buffer Empty");
     };
 
-    // OpenAI Failsafe Chain
     if (requestedModel.includes('gpt-image') || requestedModel.includes('dall-e')) {
-       try {
-          return await attemptGen(requestedModel);
-       } catch (e) {
-          onRetry?.(`${requestedModel} failed. Falling back to GPT-Image 1.0...`);
-          try {
-             return await attemptGen('gpt-image-1.0');
-          } catch (e2) {
-             onRetry?.(`Secondary cascade failed. Rerouting to DALL-E 3...`);
-             return await attemptGen('dall-e-3');
+       try { return await attemptGen(requestedModel); } 
+       catch (e) {
+          onRetry?.(`OpenAI Cascade: ${requestedModel} failed. Falling back to DALL-E 3...`);
+          try { return await attemptGen('dall-e-3'); }
+          catch (e2) {
+             onRetry?.(`OpenAI Critical: Cascade failed. Rerouting to Google Visual Core...`);
+             return await attemptGen('gemini-2.5-flash-image');
           }
-       }
-    }
-
-    // Google Failsafe Chain
-    if (requestedModel === 'nano-banana-pro') {
-       try {
-          return await attemptGen('nano-banana-pro');
-       } catch (e) {
-          onRetry?.(`Nano Banana Pro capacity reached. Downgrading to Standard...`);
-          return await attemptGen('gemini-2.5-flash-image');
        }
     }
 
@@ -188,7 +176,7 @@ export const ModelRouter = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Enhance technical precision of this bot directive. Keep it concise:\n\n${text}`,
+      contents: `Synthesize a highly professional, technical, and precise version of this bot directive. Ensure it reads like a master-level agent prompt. Return ONLY the enhanced text:\n\n${text}`,
     });
     return response.text?.trim() || text;
   },
@@ -197,7 +185,7 @@ export const ModelRouter = {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `JSON theme synthesis for: ${prompt}`,
+      contents: `Synthesize a tactical JSON theme for a UI based on: ${prompt}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {

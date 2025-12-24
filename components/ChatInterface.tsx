@@ -76,7 +76,10 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
         isStreaming: false
       } : m));
 
-      if (response.artifacts) setActiveArtifacts(response.artifacts);
+      // ONLY trigger artifact pane if we actually have artifacts and it's not a trivial response
+      if (response.artifacts && response.artifacts.length > 0 && response.content.length > 100) {
+        setActiveArtifacts(response.artifacts);
+      }
     } catch (err: any) {
       setMessages(prev => prev.map(m => m.id === botMsgId ? { ...m, content: `CRITICAL_ERROR: ${err.message}`, isStreaming: false } : m));
     } finally {
@@ -85,8 +88,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
   };
 
   return (
-    <div className={`flex flex-col bg-[#020617]/90 backdrop-blur-3xl overflow-hidden relative transition-all duration-700 ${isExpanded ? 'fixed inset-0 z-[1000] m-0 rounded-none' : 'rounded-[2.5rem] border border-white/5 h-full'} ${className}`}>
-      {/* Expanded Mode Logic handled by fixed positioning */}
+    <div className={`flex flex-col bg-[#020617]/95 backdrop-blur-3xl overflow-hidden relative transition-all duration-700 ${isExpanded ? 'fixed inset-0 z-[1000] m-0 rounded-none' : 'rounded-[2.5rem] border border-white/5 h-full'} ${className}`}>
       
       <header className="px-8 py-5 border-b border-white/5 bg-slate-900/60 flex items-center justify-between z-20">
         <div className="flex items-center gap-5">
@@ -101,13 +103,13 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setXrayActive(!xrayActive)} className={`p-2.5 rounded-xl border transition-all ${xrayActive ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/5 text-slate-500'}`}>
+          <button onClick={() => setXrayActive(!xrayActive)} className={`p-2.5 rounded-xl border transition-all ${xrayActive ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:text-white'}`}>
             <Microscope size={16} />
           </button>
           <button onClick={() => setIsExpanded(!isExpanded)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-500 hover:text-white transition-all">
             {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
-          <button onClick={() => setMessages([])} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-500 hover:text-blue-400 transition-all">
+          <button onClick={() => setMessages([])} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-500 hover:text-rose-400 transition-all">
             <RotateCw size={16} />
           </button>
         </div>
@@ -122,19 +124,19 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{msg.role === 'user' ? 'OPERATOR' : 'NEURAL_UNIT'}</span>
                 </div>
                 <div className={`p-6 rounded-3xl border shadow-2xl ${msg.role === 'user' ? 'bg-blue-600/10 border-blue-500/30 text-white' : 'bg-white/[0.03] border-white/10 text-slate-200'}`}>
-                  <div className="text-[14px] leading-relaxed whitespace-pre-wrap font-mono prose prose-invert">
+                  <div className="text-[14px] leading-relaxed whitespace-pre-wrap font-mono prose prose-invert max-w-none">
                     {msg.content}
                   </div>
                   {msg.image_url && (
-                    <div className="mt-6 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                    <div className="mt-6 rounded-2xl overflow-hidden border border-white/10 shadow-2xl max-w-lg">
                        <img src={msg.image_url} alt="Generated Asset" className="w-full h-auto" />
                     </div>
                   )}
-                  {msg.artifacts && (
+                  {msg.artifacts && msg.artifacts.length > 0 && (
                     <div className="mt-6 flex flex-wrap gap-3">
                       {msg.artifacts.map(art => (
-                        <button key={art.id} onClick={() => setActiveArtifacts(msg.artifacts!)} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-400 shadow-xl flex items-center gap-2">
-                           <Code size={14} /> View Artifact
+                        <button key={art.id} onClick={() => setActiveArtifacts(msg.artifacts!)} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-400 shadow-xl flex items-center gap-2 hover:bg-blue-500 transition-all">
+                           <Code size={14} /> VIEW_COMPONENT: {art.title}
                         </button>
                       ))}
                     </div>
@@ -147,7 +149,7 @@ export default function ChatInterface({ bot, className = '', readOnly = false }:
              <div className="flex justify-start">
                <div className="bg-blue-600/10 border border-blue-500/30 px-6 py-3 rounded-2xl flex items-center gap-3">
                  <div className="flex gap-1"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div><div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce delay-75"></div><div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce delay-150"></div></div>
-                 <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Processing Neural Weights...</span>
+                 <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Compiling Neural Weights...</span>
                </div>
              </div>
           )}

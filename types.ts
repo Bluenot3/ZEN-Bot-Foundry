@@ -91,10 +91,18 @@ export interface BotConfig {
   avatar_url?: string;
   publish_state: 'draft' | 'private' | 'arena';
   system_instructions: string;
+  system_reminder?: string; 
+  positive_directives?: string; // "Things to focus on"
+  negative_directives?: string; // "Things to avoid"
   model_config: {
     primary_model: string;
     temperature: number;
     thinking_budget: number;
+    top_p: number;
+    frequency_penalty: number;
+    presence_penalty: number;
+    max_tokens?: number;
+    stop_sequences: string[];
   };
   image_gen_config: {
     enabled: boolean;
