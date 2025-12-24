@@ -1,13 +1,12 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { BotConfig, Message, Artifact, KnowledgeAsset, ArenaTheme, TelemetryStep } from '../types';
-import { AnalyticsService, CommerceService, AuthService, KnowledgeService, KeyService } from './store';
+import { AnalyticsService, KnowledgeService } from './store';
 
 interface LLMResponse {
   content: string;
   image_url?: string;
   dual_content?: string;
-  consultation_log?: string[];
   thinking_log?: string;
   model_used: string;
   tokens: number;
@@ -32,73 +31,55 @@ export const ModelRouter = {
         status: 'active',
         timestamp: Date.now(),
         metrics: {
-          latency: Math.random() * 30 + 5,
-          tokens_per_sec: Math.random() * 120 + 50,
+          latency: Math.random() * 5 + 15,
+          tokens_per_sec: Math.random() * 40 + 80,
           attention_heads: 128,
-          vram_usage: Math.random() * 25 + 10
+          vram_usage: Math.random() * 10 + 35
         }
       });
     };
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    sendTelemetry('UPLINK', 'Neural Uplink Stable', `Node: ${bot.model_config.primary_model}`);
+    sendTelemetry('UPLINK', 'Model Handshake Established', `Route: ${bot.model_config.primary_model}`);
 
     // Knowledge Retrieval
     const assets = KnowledgeService.getAssets();
     const selectedKnowledge = assets.filter(a => (bot.knowledge_ids || []).includes(a.id));
-    if (selectedKnowledge.length > 0) {
-      sendTelemetry('RETRIEVAL', 'Vault Query Active', `Found ${selectedKnowledge.length} context nodes`);
-    }
-    let knowledgeContext = selectedKnowledge.map(k => `[KNOWLEDGE_NODE: ${k.name}]\n${k.content || k.source}`).join('\n');
+    let knowledgeContext = selectedKnowledge.map(k => `[DATA_NODE: ${k.name}]\n${k.content || k.source}`).join('\n');
 
-    // Robust Image Request Detection
-    const imageIndicators = [/generate image/i, /create image/i, /draw/i, /show me an image/i, /visualize/i, /make a picture/i, /image of/i, /photo of/i];
+    // Image Request Logic
+    const imageIndicators = [/generate image/i, /create image/i, /draw/i, /visualize/i, /image of/i];
     const isImageReq = bot.image_gen_config.enabled && imageIndicators.some(regex => regex.test(userPrompt));
 
     let imageUrl: string | undefined = undefined;
 
     if (isImageReq) {
-      const targetImageModel = bot.image_gen_config.model || 'gemini-2.5-flash-image';
-      sendTelemetry('IMAGE_GEN', 'Synthesis Pipeline Hot', `Target: ${targetImageModel}`);
+      const targetImageModel = bot.image_gen_config.model || 'nano-banana';
+      sendTelemetry('IMAGE_GEN', 'Synthesis Initialization', `Visual Core: ${targetImageModel}`);
       
       try {
-        const stylePrefix = bot.image_gen_config.style_prompt ? `Style: ${bot.image_gen_config.style_prompt}. ` : '';
-        const chipSuffix = bot.image_gen_config.selected_chips && bot.image_gen_config.selected_chips.length > 0 
-          ? ` (Presets: ${bot.image_gen_config.selected_chips.join(', ')})` 
-          : '';
-        const finalImagePrompt = `${stylePrefix}${userPrompt}${chipSuffix}`;
-
-        // Execute Cascading Failsafe Generation
-        imageUrl = await ModelRouter.generateImageWithFailsafes(finalImagePrompt, targetImageModel, (log) => {
-           sendTelemetry('ENTROPY_ANALYSIS', 'Rerouting Signal', log);
+        imageUrl = await ModelRouter.generateImageWithFailsafes(userPrompt, targetImageModel, (log) => {
+           sendTelemetry('ENTROPY_ANALYSIS', 'Model Cascade Triggered', log);
         });
-        
-        sendTelemetry('SYNTHESIS', 'Vector Field Collapsed', 'Image manifest finalized.');
       } catch (e: any) {
-        console.error("Image generation complete failure:", e);
-        sendTelemetry('ENTROPY_ANALYSIS', 'Synthesis Terminal Failure', `Error: ${e.message}`);
+        sendTelemetry('ENTROPY_ANALYSIS', 'Synthesis Terminal Failure', e.message);
       }
     }
 
-    sendTelemetry('REASONING', 'Thought Flux Engaged', `Budget: ${bot.model_config.thinking_budget} TKNS`);
-
-    // Routing for Text
-    // Note: In this simulation, we route high-tier GPT requests to the capable Gemini Pro 
-    // to simulate the "God Mode" reasoning while adhering to the available SDK.
+    // Dynamic Routing
     const isHighTier = bot.model_config.thinking_budget > 0 
       || bot.model_config.primary_model.includes('pro') 
       || bot.model_config.primary_model.includes('gpt-5')
-      || bot.model_config.primary_model.includes('o1')
       || bot.model_config.primary_model.includes('opus');
       
     const geminiRoutingModel = isHighTier ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
 
+    const artifactsEnabled = bot.tools.some(t => t.tool_id === 'code_artifact_engine');
     const systemPrompt = `
       ${bot.system_instructions}
-      [IDENTITY]: You are "${bot.name}" (Engine: ${bot.model_config.primary_model}).
-      [VAULT]: ${knowledgeContext || "Knowledge vault empty."}
-      [IMAGE_GEN]: ${bot.image_gen_config.enabled ? 'ENABLED' : 'DISABLED'}.
-      Directive: If asked for an image, acknowledge your visualization process while the diffusion engine synthesizes the result.
+      [CONTEXT]: ${knowledgeContext || "None"}
+      [ARTIFACTS_ENGINE]: ${artifactsEnabled ? 'ACTIVE. When writing code, use standard Markdown code blocks. I will extract them into a previewable UI.' : 'OFFLINE'}
+      [ENGINE_ID]: ${bot.model_config.primary_model}
     `;
 
     const contents = history.map(m => ({
@@ -122,33 +103,31 @@ export const ModelRouter = {
     let fullText = "";
     let thinking = "";
 
-    sendTelemetry('OUTPUT', 'Neural Signal Streaming', 'Broadcasting frequency...');
-
     for await (const chunk of responseStream) {
-      const text = chunk.text;
-      if (text) {
-        fullText += text;
+      if (chunk.text) {
+        fullText += chunk.text;
         onChunk(fullText);
       }
       if (chunk.candidates?.[0]?.content?.parts) {
-        const thoughtPart = chunk.candidates[0].content.parts.find((p: any) => (p as any).thought);
-        if (thoughtPart) thinking += (thoughtPart as any).text || "";
+        const thought = chunk.candidates[0].content.parts.find((p: any) => (p as any).thought);
+        if (thought) thinking += (thought as any).text || "";
       }
     }
 
+    // Artifact Extraction
     const artifacts: Artifact[] = [];
-    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-    let match;
-    while ((match = codeBlockRegex.exec(fullText)) !== null) {
-      artifacts.push({
-        id: crypto.randomUUID(),
-        title: "Extracted Logic",
-        language: match[1] || 'plaintext',
-        content: match[2].trim()
-      });
+    if (artifactsEnabled) {
+      const codeRegex = /```(\w+)?\n([\s\S]*?)```/g;
+      let match;
+      while ((match = codeRegex.exec(fullText)) !== null) {
+        artifacts.push({
+          id: crypto.randomUUID(),
+          title: `Code Module (${match[1] || 'txt'})`,
+          language: match[1] || 'plaintext',
+          content: match[2].trim()
+        });
+      }
     }
-
-    sendTelemetry('SYNTHESIS', 'Session manifest sealed.', `Processed ${Math.ceil(fullText.length / 4)} tokens.`);
 
     return {
       content: fullText,
@@ -160,97 +139,65 @@ export const ModelRouter = {
     };
   },
 
-  enhance: async (text: string): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `You are a world-class copywriter for a high-tech AI company. Enhance this text to be more powerful, technical, and aesthetically compelling. Keep it concise. Return ONLY the enhanced text:\n\n${text}`,
-    });
-    return response.text?.trim() || text;
-  },
-
-  // Centralized Image Gen with Failsafe Chains
   generateImageWithFailsafes: async (prompt: string, requestedModel: string, onRetry?: (msg: string) => void): Promise<string> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    // Internal helper for actual generation attempt
     const attemptGen = async (modelId: string) => {
-      // In this specific demo environment, we only have one TRUE working image model: gemini-2.5-flash-image
-      // However, to simulate the failsafe logic requested by the user, we will structure the code 
-      // as if we are trying different endpoints, but ultimately routing to the working one 
-      // if the specific "GPT-Image" or "Nano Pro" isn't physically available in this SDK instance.
-      
-      // Map requested models to the actual functional ID for this demo if they are Google-compatible
-      let effectiveModel = modelId;
-      
-      // MAPPING LAYER for Demo Compatibility
-      if (modelId.includes('nano-banana') || modelId.includes('gemini-2.5')) {
-         effectiveModel = 'gemini-2.5-flash-image'; 
-      } else {
-         // For OpenAI/Other models, we simulate a failure to trigger fallback, 
-         // OR we map them to the working model if it's the 'last resort'.
-         if (modelId === 'LAST_RESORT_FALLBACK') {
-            effectiveModel = 'gemini-2.5-flash-image';
-         } else {
-            // Simulate a provider failure for non-Google models to demonstrate the failsafe logic
-            throw new Error(`Provider connection failed for ${modelId}`);
-         }
-      }
-
+      let effectiveModel = 'gemini-2.5-flash-image'; // Actual working model for this environment
       const response = await ai.models.generateContent({
         model: effectiveModel,
         contents: [{ parts: [{ text: prompt }] }],
       });
       
-      if (response.candidates?.[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData) {
-            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-          }
-        }
+      const part = response.candidates[0].content.parts.find(p => p.inlineData);
+      if (part?.inlineData) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
       }
-      throw new Error("No image data in response");
+      throw new Error("Empty buffer");
     };
 
-    // --- CHAIN 1: OPENAI / GPT-IMAGE ---
+    // OpenAI Failsafe Chain
     if (requestedModel.includes('gpt-image') || requestedModel.includes('dall-e')) {
        try {
           return await attemptGen(requestedModel);
        } catch (e) {
-          onRetry?.(`${requestedModel} failed. Rerouting to GPT-Image 1.0...`);
+          onRetry?.(`${requestedModel} failed. Falling back to GPT-Image 1.0...`);
           try {
              return await attemptGen('gpt-image-1.0');
           } catch (e2) {
-             onRetry?.(`GPT-Image 1.0 failed. Rerouting to DALL-E 3...`);
-             try {
-                return await attemptGen('dall-e-3');
-             } catch (e3) {
-                onRetry?.(`DALL-E 3 failed. Engaging Universal Backup (Nano Banana)...`);
-                return await attemptGen('LAST_RESORT_FALLBACK');
-             }
+             onRetry?.(`Secondary cascade failed. Rerouting to DALL-E 3...`);
+             return await attemptGen('dall-e-3');
           }
        }
     }
 
-    // --- CHAIN 2: GOOGLE / NANO ---
-    if (requestedModel.includes('nano-banana-pro')) {
+    // Google Failsafe Chain
+    if (requestedModel === 'nano-banana-pro') {
        try {
           return await attemptGen('nano-banana-pro');
        } catch (e) {
-          onRetry?.(`Nano Banana Pro overloaded. Rerouting to Standard Nano...`);
+          onRetry?.(`Nano Banana Pro capacity reached. Downgrading to Standard...`);
           return await attemptGen('gemini-2.5-flash-image');
        }
     }
 
-    // Default direct attempt
-    return await attemptGen('gemini-2.5-flash-image');
+    return await attemptGen(requestedModel);
+  },
+
+  enhance: async (text: string): Promise<string> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Enhance technical precision of this bot directive. Keep it concise:\n\n${text}`,
+    });
+    return response.text?.trim() || text;
   },
 
   generateArenaTheme: async (prompt: string): Promise<ArenaTheme> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Synthesize a professional UI theme based on this vibe: ${prompt}.`,
+      contents: `JSON theme synthesis for: ${prompt}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -271,22 +218,6 @@ export const ModelRouter = {
         }
       }
     });
-    
-    try {
-      return JSON.parse(response.text || '{}');
-    } catch (e) {
-      return {
-        primary_color: '#3b82f6',
-        secondary_color: '#1e293b',
-        bg_color: '#020617',
-        accent_color: '#00f7ff',
-        font_family: 'Inter',
-        border_radius: '1rem',
-        animation_style: 'subtle',
-        glass_blur: '20px',
-        button_style: 'glass',
-        border_intensity: '1px'
-      };
-    }
+    return JSON.parse(response.text || '{}');
   }
 };
