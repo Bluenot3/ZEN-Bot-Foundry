@@ -141,10 +141,21 @@ export const BotService = {
       primary_model: 'gemini-3-flash-preview', 
       temperature: 0.7, 
       thinking_budget: 0,
+      context_budget: 100000,
+      max_output_tokens: 8192,
       top_p: 0.95,
       frequency_penalty: 0,
       presence_penalty: 0,
       stop_sequences: []
+    },
+    theme_config: {
+      primary_color: '#3b82f6',
+      secondary_color: '#1e293b',
+      font_family: 'Inter',
+      background_style: 'glass',
+      button_style: 'rounded',
+      message_bubble_style: 'modern',
+      light_mode: false
     },
     image_gen_config: {
       enabled: false,

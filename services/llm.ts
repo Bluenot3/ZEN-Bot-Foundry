@@ -82,7 +82,29 @@ export const ModelRouter = {
 
     const systemPrompt = systemPromptParts.filter(Boolean).join('\n');
 
-    const contents = history.map(m => ({
+    // Context Budget Logic: Prune history if needed
+    // Simple estimation: 1 char ~= 0.25 tokens. 
+    // We only keep the last N messages that fit within context_budget
+    const contextBudget = bot.model_config.context_budget || 100000;
+    let currentTokenEstimate = 0;
+    const prunedHistory: Message[] = [];
+    
+    // Process from newest to oldest
+    for (let i = history.length - 1; i >= 0; i--) {
+       const msg = history[i];
+       const estimatedTokens = msg.content.length * 0.3; // Conservative estimate
+       if (currentTokenEstimate + estimatedTokens < contextBudget) {
+          prunedHistory.unshift(msg);
+          currentTokenEstimate += estimatedTokens;
+       } else {
+          break; // Stop adding if we hit the limit
+       }
+    }
+    
+    // Always include system prompt cost in telemetry, but for chat API it's handled via config
+    sendTelemetry('REASONING', 'Context Optimization', `History pruned to ${prunedHistory.length} turns (${Math.round(currentTokenEstimate)} est. tokens)`);
+
+    const contents = prunedHistory.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
     }));
@@ -95,6 +117,7 @@ export const ModelRouter = {
         systemInstruction: systemPrompt,
         temperature: bot.model_config.temperature,
         topP: bot.model_config.top_p,
+        maxOutputTokens: bot.model_config.max_output_tokens,
         thinkingConfig: bot.model_config.thinking_budget > 0 
           ? { thinkingBudget: bot.model_config.thinking_budget } 
           : undefined,

@@ -83,6 +83,16 @@ export interface Message {
   telemetry?: TelemetryStep[];
 }
 
+export interface BotThemeConfig {
+  primary_color: string;
+  secondary_color: string;
+  font_family: string;
+  background_style: 'solid' | 'gradient' | 'glass' | 'mesh';
+  button_style: 'rounded' | 'sharp' | 'pill';
+  message_bubble_style: 'modern' | 'classic' | 'terminal';
+  light_mode: boolean;
+}
+
 export interface BotConfig {
   id: string;
   name: string;
@@ -92,17 +102,20 @@ export interface BotConfig {
   publish_state: 'draft' | 'private' | 'arena';
   system_instructions: string;
   system_reminder?: string; 
-  positive_directives?: string; // "Things to focus on"
-  negative_directives?: string; // "Things to avoid"
+  positive_directives?: string; 
+  negative_directives?: string; 
+  theme_config: BotThemeConfig;
   model_config: {
     primary_model: string;
     temperature: number;
-    thinking_budget: number;
     top_p: number;
     frequency_penalty: number;
     presence_penalty: number;
-    max_tokens?: number;
     stop_sequences: string[];
+    // Token Budgeting
+    max_output_tokens: number;
+    context_budget: number; // Memory/Input reservation
+    thinking_budget: number;
   };
   image_gen_config: {
     enabled: boolean;
